@@ -76,15 +76,12 @@ RUN ${VENV_PATH}/bin/pip install \
 RUN test -n "${MERA_WHL_URL}" \
     && "${VENV_PATH}/bin/pip" install "${MERA_WHL_URL}"
 
-# Clone RUHMI repo so we have access to the conversion scripts
-WORKDIR /opt
-RUN git clone \
-      --branch Release-2025-11-28 \
-      --depth 1 \
-      https://github.com/renesas/ruhmi-framework-mcu.git
+# Copy conversion script
+RUN mkdir /scripts
+COPY scripts/mcu_quantize.py /scripts/
 
 # Set working directory
-WORKDIR /opt/ruhmi-framework-mcu
+WORKDIR /scripts
 
 # Automatically source the RUHMI virtual environment
 RUN echo 'source /opt/ruhmi-venv/bin/activate' >> /root/.bashrc
