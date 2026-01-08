@@ -1,0 +1,149 @@
+{
+  "execution": {
+    "stages": [
+      [
+        [
+          [
+            {
+              "backend": "mera_c99_source_cpu",
+              "binaries_location": "sub_0000__CPU_C_CODEGEN",
+              "name": "sub_0000"
+            },
+            {
+              "input_buffers": {
+                "input": 0
+              },
+              "input_order": [
+                "input"
+              ],
+              "output_buffers": {
+                "input_10018": 1
+              },
+              "output_order": [
+                "input_10018"
+              ]
+            }
+          ]
+        ]
+      ],
+      [
+        [
+          [
+            {
+              "backend": "mera_c99_source_ethos_u55",
+              "binaries_location": "sub_0001__ARM_ETHOS_U55_C_CODEGEN",
+              "name": "sub_0001"
+            },
+            {
+              "input_buffers": {
+                "input_10018": 1
+              },
+              "input_order": [
+                "input_10018"
+              ],
+              "output_buffers": {
+                "output_70010_10026": 2
+              },
+              "output_order": [
+                "output_70010_10026"
+              ]
+            }
+          ]
+        ]
+      ],
+      [
+        [
+          [
+            {
+              "backend": "mera_c99_source_cpu",
+              "binaries_location": "sub_0002__CPU_C_CODEGEN",
+              "name": "sub_0002"
+            },
+            {
+              "input_buffers": {
+                "output_70010_10026": 2
+              },
+              "input_order": [
+                "output_70010_10026"
+              ],
+              "output_buffers": {
+                "output_70010": 3
+              },
+              "output_order": [
+                "output_70010"
+              ]
+            }
+          ]
+        ]
+      ]
+    ]
+  },
+  "memory": {
+    "buffers": [
+      {
+        "alignment": 256,
+        "alloc_mode": "linux_malloc",
+        "bytes_size": 2400,
+        "data_type": "float32",
+        "name": "input",
+        "offset": 0,
+        "shape": [
+          1,
+          600
+        ],
+        "size": 600
+      },
+      {
+        "alignment": 256,
+        "alloc_mode": "linux_malloc",
+        "bytes_size": 600,
+        "data_type": "int8",
+        "name": "input_10018",
+        "offset": 0,
+        "shape": [
+          1,
+          600
+        ],
+        "size": 600
+      },
+      {
+        "alignment": 256,
+        "alloc_mode": "linux_malloc",
+        "bytes_size": 5,
+        "data_type": "int8",
+        "name": "output_70010_10026",
+        "offset": 0,
+        "shape": [
+          1,
+          5
+        ],
+        "size": 5
+      },
+      {
+        "alignment": 256,
+        "alloc_mode": "linux_malloc",
+        "bytes_size": 20,
+        "data_type": "float32",
+        "name": "output_70010",
+        "offset": 0,
+        "shape": [
+          1,
+          5
+        ],
+        "size": 5
+      }
+    ],
+    "input_buffers": [
+      [
+        "input",
+        0
+      ]
+    ],
+    "output_buffers": [
+      [
+        "output_70010",
+        3
+      ]
+    ]
+  }
+}
