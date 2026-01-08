@@ -13,6 +13,16 @@ docker build -t ruhmi .
 Then, run the container in interactive mode. Note that the container will automatically delete whenever you exit. You also need to mount the *models/* directory to read in your ONNX models and export RUHMI files.
 
 ```sh
-docker run --rm -it -v "$PWD/models:/models" -v "$PWD/scripts:/scripts" ruhmi
+docker run --rm -it -v "$PWD/projects:/projects" -v "$PWD/scripts:/scripts" ruhmi
 ```
 
+To run the quantization script and pass in representative samples:
+
+```sh
+python /scripts/mcu_quantize.py \
+  -d /projects/02_gesture_classification/model/calibration_data.npz \
+  -c 50 \
+  --ethos \
+  /projects/02_gesture_classification/model/ \
+  /projects/02_gesture_classification/model/deploy_output
+```

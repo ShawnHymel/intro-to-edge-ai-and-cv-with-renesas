@@ -438,7 +438,14 @@ def load_calibration_data(calib_file_path, mera_model, num_samples=None):
         for input_name in mera_model.input_desc.all_inputs.keys():
             if input_name not in npz_data:
                 raise KeyError(f"Input '{input_name}' not found in NPZ file. Available keys: {list(npz_data.keys())}")
-            sample[input_name] = npz_data[input_name][i]
+            
+            # Add batch dimension if not present
+            sample_data = npz_data[input_name][i]
+            if len(sample_data.shape) == 1:
+                sample_data = np.expand_dims(sample_data, axis=0)
+            sample[input_name] = sample_data
+        
+        # Add sample to list
         data.append(sample)
     
     print(f"Successfully loaded {len(data)} calibration samples")
@@ -672,11 +679,19 @@ def main():
             
             qtzed_path = quantize(model, model.model_path, model.quantization_path, quantization_platform,
                                 quantizer.QuantizerConfigPresets.MCU, calib_data_source)
+            if model.status != Status.IN_PROGRESS or not qtzed_path:
+                continue
 
         #
         # Deploy the quantized model, run it and save inputs/output as reference data
         #
-        model_path = qtzed_path if use_quantizer else model.model_path
+        if use_quantizer:
+            if not qtzed_path:
+                print(f"Skipping {model.model_name}: quantization failed")
+                continue
+            model_path = qtzed_path
+        else:
+            model_path = model.model_path
         ref_data = deploy_and_run(model, model_path, model.deploy_qtz_path,
                                   Platform.MCU_CPU, Target.MERAInterpreter)
         ref_data_path = model.deploy_qtz_path / 'ref_qtz'
