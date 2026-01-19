@@ -18,8 +18,8 @@ extern const timer_instance_t g_timer0;
 extern gpt_instance_ctrl_t g_timer0_ctrl;
 extern const timer_cfg_t g_timer0_cfg;
 
-#ifndef g_timer0_callback
-void g_timer0_callback(timer_callback_args_t *p_args);
+#ifndef NULL
+void NULL(timer_callback_args_t *p_args);
 #endif
 /* I2C Master on IIC Instance. */
 extern const i2c_master_instance_t g_i2c_master1;

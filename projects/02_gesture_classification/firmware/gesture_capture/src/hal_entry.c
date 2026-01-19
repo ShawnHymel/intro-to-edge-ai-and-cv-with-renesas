@@ -21,7 +21,7 @@
 #define NUM_SAMPLES         100 /* 1 sec */
 
 /******************************************************************************
- * Data Structures
+ * Data structures
  ******************************************************************************/
 
 /* Sample data structure */
@@ -36,123 +36,14 @@ typedef struct {
 } sample_t;
 
 /******************************************************************************
- * Global Variables
+ * Function prototypes
  ******************************************************************************/
 
-
-/******************************************************************************
- * Function Prototypes
- ******************************************************************************/
-
-static bool parse_csv_filename(const char *filename, uint32_t *p_num);
-static FRESULT find_next_file_number(uint32_t *file_num);
 static FRESULT collect_gesture(uint32_t file_num);
 
 /******************************************************************************
  * Functions
  ******************************************************************************/
-
-/* Check if filename matches XXXXXX.CSV pattern and extract number */
-static bool parse_csv_filename(const char *filename, uint32_t *p_num)
-{
-    /* Check length: should be exactly "XXXXXX.CSV" (10 chars) */
-    if (10 != strlen(filename))
-    {
-        return false;
-    }
-
-    /* Check extension */
-    if (0 != strcmp(&filename[7], "CSV"))
-    {
-        return false;
-    }
-
-    /* Check if first 6 chars are digits */
-    for (int i = 0; i < 6; i++)
-    {
-        if (('0' > filename[i]) || ('9' < filename[i]))
-        {
-            return false;
-        }
-    }
-
-    /* Check dot */
-    if ('.' != filename[6])
-    {
-        return false;
-    }
-
-    /* Extract number */
-    char num_str[7];
-    memcpy(num_str, filename, 6);
-    num_str[6] = '\0';
-    *p_num = (uint32_t)atol(num_str);
-
-    return true;
-}
-
-/* Scan SD card and find next file number */
-static FRESULT find_next_file_number(uint32_t *file_num)
-{
-    FRESULT fr;
-    DIR dir;
-    FILINFO fno;
-    uint32_t max_num = 0;
-    bool found = false;
-
-    APP_PRINT("Scanning SD card for existing files...\r\n");
-
-    /* Open root directory */
-    fr = f_opendir(&dir, "/");
-    if (FR_OK != fr) {
-        return fr;
-    }
-
-    /* Scan all files */
-    while (1) {
-        /* Read directory entries */
-        fr = f_readdir(&dir, &fno);
-        if ((FR_OK != fr) || (0 == fno.fname[0]))
-        {
-            break;
-        }
-
-        /* Skip directories */
-        if (fno.fattrib & AM_DIR)
-        {
-            continue;
-        }
-
-        /* Check if filename matches our pattern */
-        if (parse_csv_filename(fno.fname, file_num))
-        {
-            found = true;
-            if (*file_num > max_num)
-            {
-                max_num = *file_num;
-            }
-        }
-    }
-
-    /* Close directory */
-    fr = f_closedir(&dir);
-    if (FR_OK != fr)
-    {
-        return fr;
-    }
-
-    /* Set next file number */
-    if (found)
-    {
-        *file_num = max_num + 1;
-    }
-    else
-    {
-        *file_num = 0;
-    }
-
-    return FR_OK;
-}
 
 /* Collect gesture data and save to SD card */
 static FRESULT collect_gesture(uint32_t file_num)
@@ -270,12 +161,6 @@ static FRESULT collect_gesture(uint32_t file_num)
  * Interrupt service routines (ISRs)
  ******************************************************************************/
 
-/* Timer 0 callback: dispatch to millis handler */
-void g_timer0_callback(timer_callback_args_t *p_args)
-{
-    millis_callback(p_args);
-}
-
 /* Main I2C callback that dispatches to driver */
 void g_i2c_master1_callback(i2c_master_callback_args_t *p_args)
 {
@@ -298,19 +183,11 @@ void hal_entry(void)
     TERM_INIT();
     APP_PRINT("\r\nGesture Sample Collection\r\n");
 
-    /* Initialize millisecond timer */
-    err = R_GPT_Open(&g_timer0_ctrl, &g_timer0_cfg);
+    /* Initialize and start microsecond timer */
+    err = init_timer(&g_timer0_ctrl, &g_timer0_cfg);
     if (FSP_SUCCESS != err)
     {
-        APP_PRINT("Error: Timer Open failed: %d\r\n", err);
-        while(1);
-    }
-
-    /* Start millisecond timer */
-    err = R_GPT_Start(&g_timer0_ctrl);
-    if (FSP_SUCCESS != err)
-    {
-        APP_PRINT("Error: Timer Start failed: %d\r\n", err);
+        APP_PRINT("Error: Timer init failed: %d\r\n", err);
         while(1);
     }
 

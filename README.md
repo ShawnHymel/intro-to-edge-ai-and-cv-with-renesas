@@ -75,6 +75,7 @@ my_project/
 │   ├── inference/
 │   │   ├── compute_sub_*.c/h           # Generated code for CPU operations
 │   │   ├── ethosu_common.h             # Ethos-U interface
+│   │   ├── kernel_library_fp32.c/h     # Float32 math/matrix operations for CPU
 │   │   ├── kernel_library_int.c/h      # INT8 math/matrix operations for CPU
 │   │   ├── kernel_library_utils.c/h    # Helper functions for kernel libraries
 │   │   ├── model.c/h                   # Main API interface
