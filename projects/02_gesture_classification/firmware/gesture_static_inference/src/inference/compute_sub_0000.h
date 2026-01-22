@@ -49,48 +49,37 @@
 
 #include <stdint.h>
 
-#include "compute_sub_0004.h"
+/*
+ kBufferSize_sub_0000 is a compile-time constant to be used by the user of compute_sub_0000 function
+ to allocate a buffer with at least the specified size.
 
-#include "arm_nn_types.h"
-#include "arm_nnfunctions.h"
-#include "kernel_library_utils.h"
+ Example of how to call the compute function:
 
-#include "kernel_library_int.h" 
+   // it is possible to use either heap, stack or a custom data section to allocate this buffer
+   uint8_t my_buffer[kBufferSize_sub_0000];
 
- 
+   int main() {
+     ...
+     compute_sub_0000(my_buffer, input, output);
+   }
+*/
+enum BufferSize_sub_0000 {
 
-void compute_sub_0004(
+  kBufferSize_sub_0000 = 1
+
+};
+
+void compute_sub_0000(
   // buffer for intermediate results
-  uint8_t* main_storage, // should provide at least 9 bytes of storage
+  uint8_t* main_storage, // should provide at least 1 bytes of storage
 
   // inputs
   
-  const int8_t output_70014_10042[4], // 1,4
+  const float input[600], // 1,600
   
 
   // outputs
   
-  float output_70014[4]  // 1,4
+  int8_t input_10018[600]  // 1,600
   
-) {
-  // Buffers allocated on the main storage (note: depends on the execution order)
-  
-
-  // Parameters
-  
-
-
-
-
-
-
-
-//
-// Dequantize
-//
-// Input  output_70014_10042: int8_t - 1,4
-// Output output_70014: float - 1,4
-AffineDequantizeInt8ToFloat(output_70014_10042, output_70014, 4, 0, 0.11892443150281906);
-
-
-}
+);

@@ -45,52 +45,28 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
+#include <stddef.h>
 #include <stdint.h>
 
-#include "compute_sub_0004.h"
+// NPU unit addresses
+#include "sub_0001_tensors.h"
 
-#include "arm_nn_types.h"
-#include "arm_nnfunctions.h"
-#include "kernel_library_utils.h"
+// Arenas for NPU units
+extern uint8_t sub_0001_arena[kArenaSize_sub_0001];
 
-#include "kernel_library_int.h" 
-
- 
-
-void compute_sub_0004(
-  // buffer for intermediate results
-  uint8_t* main_storage, // should provide at least 9 bytes of storage
-
-  // inputs
-  
-  const int8_t output_70014_10042[4], // 1,4
-  
-
-  // outputs
-  
-  float output_70014[4]  // 1,4
-  
-) {
-  // Buffers allocated on the main storage (note: depends on the execution order)
-  
-
-  // Parameters
-  
+// Buffers
+extern float buf_input[600];
+extern float buf_output_70010[5];
 
 
+void RunModel(bool clean_outputs);
 
+  // Model input pointers
+float* GetModelInputPtr_input();
 
+  // Model output pointers
+float* GetModelOutputPtr_output_70010();
 
-
-
-//
-// Dequantize
-//
-// Input  output_70014_10042: int8_t - 1,4
-// Output output_70014: float - 1,4
-AffineDequantizeInt8ToFloat(output_70014_10042, output_70014, 4, 0, 0.11892443150281906);
-
-
-}

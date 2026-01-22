@@ -45,52 +45,52 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
+#include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
 
-#include "compute_sub_0004.h"
+#include "model.h"
 
-#include "arm_nn_types.h"
-#include "arm_nnfunctions.h"
-#include "kernel_library_utils.h"
+// CPU compute declarations
+#include "compute_sub_0000.h"
+#include "sub_0001_invoke.h"
+#include "compute_sub_0002.h"
 
-#include "kernel_library_int.h" 
+// Buffers for CPU units
+float buf_input[600];
+float buf_output_70010[5];
 
- 
+// Arenas for CPU units
+uint8_t compute_arena_sub_0000[kBufferSize_sub_0000];
+uint8_t compute_arena_sub_0002[kBufferSize_sub_0002];
 
-void compute_sub_0004(
-  // buffer for intermediate results
-  uint8_t* main_storage, // should provide at least 9 bytes of storage
-
-  // inputs
-  
-  const int8_t output_70014_10042[4], // 1,4
-  
-
-  // outputs
-  
-  float output_70014[4]  // 1,4
-  
-) {
-  // Buffers allocated on the main storage (note: depends on the execution order)
-  
-
-  // Parameters
-  
+  // Model input pointers
+float* GetModelInputPtr_input() {
+  return buf_input;
+}
 
 
+  // Model output pointers
+float* GetModelOutputPtr_output_70010() {
+  return buf_output_70010;
+}
 
 
+void RunModel(bool clean_outputs) {
+  // Buffers for NPU units
+  int8_t* buf_input_10018 = (int8_t*) (sub_0001_arena + sub_0001_address_input_10018);
+  int8_t* buf_output_70010_10026 = (int8_t*) (sub_0001_arena + sub_0001_address_output_70010_10026);
 
+// CPU Unit
+  compute_sub_0000(compute_arena_sub_0000, buf_input, buf_input_10018  );
 
+// NPU Unit
+  sub_0001_invoke(clean_outputs);
 
-//
-// Dequantize
-//
-// Input  output_70014_10042: int8_t - 1,4
-// Output output_70014: float - 1,4
-AffineDequantizeInt8ToFloat(output_70014_10042, output_70014, 4, 0, 0.11892443150281906);
-
+// CPU Unit
+  compute_sub_0002(compute_arena_sub_0002, buf_output_70010_10026, buf_output_70010  );
 
 }

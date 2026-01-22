@@ -4,22 +4,13 @@
 #include "inference/model.h"
 #include "test_sample.h"
 
-/* Target image dimensions */
-#define IMG_WIDTH 48
-#define IMG_HEIGHT 48
-
-/* Grayscale conversion coefficients */
-#define GRAY_R_COEFF 0.299f
-#define GRAY_G_COEFF 0.587f
-#define GRAY_B_COEFF 0.114f
-
-/* Labels */
-#define NUM_CLASSES 4
+#define NUM_CLASSES 5
 const char* class_names[] = {
-    "_background",
+    "_idle",
     "_other",
-    "thumbs_down",
-    "thumbs_up",
+    "alpha",
+    "beta",
+    "gamma"
 };
 
 void hal_entry(void)
@@ -47,12 +38,10 @@ void hal_entry(void)
 
     /* Get pointers to model input/output buffers */
     input_ptr = GetModelInputPtr_input();
-    output_ptr = GetModelOutputPtr_output_70014();
+    output_ptr = GetModelOutputPtr_output_70010();
 
-    /* Copy test data to input buffer (cast to float) */
-    for (int i = 0; i < TEST_INPUT_SIZE; i++) {
-        input_ptr[i] = (float)test_input[i];
-    }
+    /* Copy test data */
+    memcpy(input_ptr, test_input, TEST_INPUT_SIZE * sizeof(float));
 
     /* Run inference */
     RunModel(true);

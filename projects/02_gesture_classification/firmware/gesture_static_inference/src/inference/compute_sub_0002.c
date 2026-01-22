@@ -49,7 +49,7 @@
 
 #include <stdint.h>
 
-#include "compute_sub_0004.h"
+#include "compute_sub_0002.h"
 
 #include "arm_nn_types.h"
 #include "arm_nnfunctions.h"
@@ -59,18 +59,18 @@
 
  
 
-void compute_sub_0004(
+void compute_sub_0002(
   // buffer for intermediate results
   uint8_t* main_storage, // should provide at least 9 bytes of storage
 
   // inputs
   
-  const int8_t output_70014_10042[4], // 1,4
+  const int8_t output_70010_10026[5], // 1,5
   
 
   // outputs
   
-  float output_70014[4]  // 1,4
+  float output_70010[5]  // 1,5
   
 ) {
   // Buffers allocated on the main storage (note: depends on the execution order)
@@ -88,9 +88,9 @@ void compute_sub_0004(
 //
 // Dequantize
 //
-// Input  output_70014_10042: int8_t - 1,4
-// Output output_70014: float - 1,4
-AffineDequantizeInt8ToFloat(output_70014_10042, output_70014, 4, 0, 0.11892443150281906);
+// Input  output_70010_10026: int8_t - 1,5
+// Output output_70010: float - 1,5
+AffineDequantizeInt8ToFloat(output_70010_10026, output_70010, 5, 0, 0.14729025959968567);
 
 
 }

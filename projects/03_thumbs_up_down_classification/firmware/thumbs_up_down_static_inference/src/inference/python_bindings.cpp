@@ -47,50 +47,87 @@
  * limitations under the License.
  */
 
-#include <stdint.h>
+#include "pybind11/pybind11.h"
+#include "pybind11/numpy.h"
 
+extern "C" {
 #include "compute_sub_0004.h"
+}
 
-#include "arm_nn_types.h"
-#include "arm_nnfunctions.h"
-#include "kernel_library_utils.h"
+namespace py = pybind11;
 
-#include "kernel_library_int.h" 
+bool check_dims(int ndim, const py::ssize_t* shape, const py::ssize_t* expected_shape) {
+  for (int i = 0; i < ndim; ++i) {
+    if (shape[i] !=  expected_shape[i]) {
+      std::stringstream ss;
+      ss << "Wrong dimension size at position " << i << ": expected: ";
+      ss << expected_shape[i] << " but got size: " << shape[i];
+      return false;
+    }
+  }
+  return true;
+}
 
- 
-
-void compute_sub_0004(
-  // buffer for intermediate results
-  uint8_t* main_storage, // should provide at least 9 bytes of storage
-
-  // inputs
+py::object wrapper(
   
-  const int8_t output_70014_10042[4], // 1,4
-  
-
-  // outputs
-  
-  float output_70014[4]  // 1,4
+  const py::array_t<int8_t, py::array::c_style>& input_0 
   
 ) {
-  // Buffers allocated on the main storage (note: depends on the execution order)
+  
+  py::array_t<float, py::array::c_style> output_0 ({ 1,4 });
+  
+  
+  const py::ssize_t expected_in_shape_0[] = { 1,4 };
+  
+  
+  const py::ssize_t expected_out_shape_0[] = { 1,4 };
   
 
-  // Parameters
+  
+  check_dims(input_0.ndim(), input_0.shape(), expected_in_shape_0);
   
 
+  
+  const auto* in_ptr_0 = static_cast<const int8_t*>(input_0.request().ptr);
+  
+  
+  auto* out_ptr_0 = static_cast<float*>(output_0.request().ptr);
+  
 
+  std::vector<uint8_t> main_storage(kBufferSize_sub_0004);
 
+  compute_sub_0004(
+    // buffer for intermediate results
+    main_storage.data(),
 
+    // inputs
+    
+    in_ptr_0,
+    
+    // outputs
+    
+    out_ptr_0 
+    
+  );
+  return py::make_tuple(
+  
+    py::array_t<float, py::array::c_style>(output_0) 
+  
+  );
+}
 
+PYBIND11_MODULE(py_compute, m) {
+  m.doc() = "Compute Python binding";
+  m.def("compute", &wrapper,
+    
+    py::arg("input_0").noconvert(true).none(false),
+    
 
+    "Generated compute_sub_0004 function"
+  );
 
-//
-// Dequantize
-//
-// Input  output_70014_10042: int8_t - 1,4
-// Output output_70014: float - 1,4
-AffineDequantizeInt8ToFloat(output_70014_10042, output_70014, 4, 0, 0.11892443150281906);
-
-
+  m.def("get_signature",
+    [](){}, 
+    "Get the input sizes and output sizes and dtype"
+  );
 }

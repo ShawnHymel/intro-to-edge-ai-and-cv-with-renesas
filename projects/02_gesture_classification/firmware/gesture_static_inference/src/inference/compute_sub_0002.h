@@ -49,48 +49,43 @@
 
 #include <stdint.h>
 
-#include "compute_sub_0004.h"
+/*
+ kBufferSize_sub_0002 is a compile-time constant to be used by the user of compute_sub_0002 function
+ to allocate a buffer with at least the specified size.
 
-#include "arm_nn_types.h"
-#include "arm_nnfunctions.h"
-#include "kernel_library_utils.h"
+ Example of how to call the compute function:
 
-#include "kernel_library_int.h" 
+   // it is possible to use either heap, stack or a custom data section to allocate this buffer
+   uint8_t my_buffer[kBufferSize_sub_0002];
 
- 
+   int main() {
+     ...
+     compute_sub_0002(my_buffer, input, output);
+   }
+*/
+enum BufferSize_sub_0002 {
 
-void compute_sub_0004(
+#if defined(ARM_MATH_MVEI)
+  kBufferSize_sub_0002 = 9
+#elif defined(ARM_MATH_DSP)
+  kBufferSize_sub_0002 = 9
+#else
+  kBufferSize_sub_0002 = 9
+#endif
+
+};
+
+void compute_sub_0002(
   // buffer for intermediate results
   uint8_t* main_storage, // should provide at least 9 bytes of storage
 
   // inputs
   
-  const int8_t output_70014_10042[4], // 1,4
+  const int8_t output_70010_10026[5], // 1,5
   
 
   // outputs
   
-  float output_70014[4]  // 1,4
+  float output_70010[5]  // 1,5
   
-) {
-  // Buffers allocated on the main storage (note: depends on the execution order)
-  
-
-  // Parameters
-  
-
-
-
-
-
-
-
-//
-// Dequantize
-//
-// Input  output_70014_10042: int8_t - 1,4
-// Output output_70014: float - 1,4
-AffineDequantizeInt8ToFloat(output_70014_10042, output_70014, 4, 0, 0.11892443150281906);
-
-
-}
+);
