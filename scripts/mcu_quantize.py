@@ -439,10 +439,17 @@ def load_calibration_data(calib_file_path, mera_model, num_samples=None):
             if input_name not in npz_data:
                 raise KeyError(f"Input '{input_name}' not found in NPZ file. Available keys: {list(npz_data.keys())}")
             
-            # Add batch dimension if not present
+            # Get sample data
             sample_data = npz_data[input_name][i]
-            if len(sample_data.shape) == 1:
+
+            # Get expected shape from model
+            expected_shape = mera_model.input_desc.all_inputs[input_name].input_shape
+
+            # Add batch dimension if sample has one fewer dimension than expected
+            if len(sample_data.shape) == len(expected_shape) - 1:
                 sample_data = np.expand_dims(sample_data, axis=0)
+
+            # Add sample data
             sample[input_name] = sample_data
         
         # Add sample to list
