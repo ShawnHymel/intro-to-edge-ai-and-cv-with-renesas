@@ -94,24 +94,22 @@
           const mipi_dsi_instance_t RA_NOT_DEFINED;
         #endif
 /** Display device extended configuration */
-const glcdc_extended_cfg_t g_lcd_glcdc_extend_cfg =
-{ .tcon_hsync = GLCDC_TCON_PIN_1,
-  .tcon_vsync = GLCDC_TCON_PIN_0,
-  .tcon_de = GLCDC_TCON_PIN_2,
-  .correction_proc_order = GLCDC_CORRECTION_PROC_ORDER_BRIGHTNESS_CONTRAST2GAMMA,
-  .clksrc = GLCDC_CLK_SRC_INTERNAL,
-  .clock_div_ratio = GLCDC_PANEL_CLK_DIVISOR_4,
-  .dithering_mode = GLCDC_DITHERING_MODE_TRUNCATE,
-  .dithering_pattern_A = GLCDC_DITHERING_PATTERN_11,
-  .dithering_pattern_B = GLCDC_DITHERING_PATTERN_11,
-  .dithering_pattern_C = GLCDC_DITHERING_PATTERN_11,
-  .dithering_pattern_D = GLCDC_DITHERING_PATTERN_11,
+const glcdc_extended_cfg_t g_lcd_glcdc_extend_cfg = { .tcon_hsync =
+		GLCDC_TCON_PIN_1, .tcon_vsync = GLCDC_TCON_PIN_0, .tcon_de =
+		GLCDC_TCON_PIN_2, .correction_proc_order =
+		GLCDC_CORRECTION_PROC_ORDER_BRIGHTNESS_CONTRAST2GAMMA, .clksrc =
+		GLCDC_CLK_SRC_INTERNAL, .clock_div_ratio = GLCDC_PANEL_CLK_DIVISOR_4,
+		.dithering_mode = GLCDC_DITHERING_MODE_TRUNCATE, .dithering_pattern_A =
+				GLCDC_DITHERING_PATTERN_11, .dithering_pattern_B =
+				GLCDC_DITHERING_PATTERN_11, .dithering_pattern_C =
+				GLCDC_DITHERING_PATTERN_11, .dithering_pattern_D =
+				GLCDC_DITHERING_PATTERN_11,
 #if (RA_NOT_DEFINED != RA_NOT_DEFINED)
             .phy_layer             = (void*)&RA_NOT_DEFINED
         #else
-  .phy_layer = NULL
+		.phy_layer = NULL
 #endif
-        };
+		};
 #undef RA_NOT_DEFINED
 
 /** Display control block instance */
@@ -119,60 +117,65 @@ glcdc_instance_ctrl_t g_lcd_glcdc_ctrl;
 
 /** Display interface configuration */
 const display_cfg_t g_lcd_glcdc_cfg =
-        {
-        /** Input1(Graphics1 layer) configuration */
-        .input[0] =
-        {
+		{
+		/** Input1(Graphics1 layer) configuration */
+		.input[0] =
+		{
 #if GLCDC_CFG_LAYER_1_ENABLE
                 .p_base              = (uint32_t *)&fb_background[0],
                 #else
-          .p_base = NULL,
+				.p_base = NULL,
 #endif
-          .hsize = DISPLAY_HSIZE_INPUT0,
-          .vsize = DISPLAY_VSIZE_INPUT0, .hstride = DISPLAY_BUFFER_STRIDE_PIXELS_INPUT0, .format =
-                  DISPLAY_IN_FORMAT_16BITS_RGB565,
-          .line_descending_enable = false, .lines_repeat_enable = false, .lines_repeat_times = 0 },
+				.hsize = DISPLAY_HSIZE_INPUT0, .vsize = DISPLAY_VSIZE_INPUT0,
+				.hstride = DISPLAY_BUFFER_STRIDE_PIXELS_INPUT0, .format =
+						DISPLAY_IN_FORMAT_16BITS_RGB565,
+				.line_descending_enable = false, .lines_repeat_enable = false,
+				.lines_repeat_times = 0 },
 
-          /** Input2(Graphics2 layer) configuration */
-          .input[1] =
-          {
+		/** Input2(Graphics2 layer) configuration */
+		.input[1] =
+		{
 #if GLCDC_CFG_LAYER_2_ENABLE
                 .p_base              = (uint32_t *)&fb_foreground[0],
                 #else
-            .p_base = NULL,
+				.p_base = NULL,
 #endif
-            .hsize = DISPLAY_HSIZE_INPUT1,
-            .vsize = DISPLAY_VSIZE_INPUT1, .hstride = DISPLAY_BUFFER_STRIDE_PIXELS_INPUT1, .format =
-                    DISPLAY_IN_FORMAT_16BITS_RGB565,
-            .line_descending_enable = false, .lines_repeat_enable = false, .lines_repeat_times = 0 },
+				.hsize = DISPLAY_HSIZE_INPUT1, .vsize = DISPLAY_VSIZE_INPUT1,
+				.hstride = DISPLAY_BUFFER_STRIDE_PIXELS_INPUT1, .format =
+						DISPLAY_IN_FORMAT_16BITS_RGB565,
+				.line_descending_enable = false, .lines_repeat_enable = false,
+				.lines_repeat_times = 0 },
 
-          /** Input1(Graphics1 layer) layer configuration */
-          .layer[0] =
-          { .coordinate =
-          { .x = 0, .y = 0 },
-            .fade_control = DISPLAY_FADE_CONTROL_NONE, .fade_speed = 0 },
+		/** Input1(Graphics1 layer) layer configuration */
+		.layer[0] =
+		{ .coordinate = { .x = 0, .y = 0 }, .fade_control =
+				DISPLAY_FADE_CONTROL_NONE, .fade_speed = 0 },
 
-          /** Input2(Graphics2 layer) layer configuration */
-          .layer[1] =
-          { .coordinate =
-          { .x = 700, .y = 0 },
-            .fade_control = DISPLAY_FADE_CONTROL_NONE, .fade_speed = 0 },
+		/** Input2(Graphics2 layer) layer configuration */
+		.layer[1] =
+		{ .coordinate = { .x = 700, .y = 0 }, .fade_control =
+				DISPLAY_FADE_CONTROL_NONE, .fade_speed = 0 },
 
-          /** Output configuration */
-          .output =
-                  { .htiming =
-                  { .total_cyc = 1334, .display_cyc = 1024, .back_porch = 300, .sync_width = 10, .sync_polarity =
-                            DISPLAY_SIGNAL_POLARITY_LOACTIVE },
-                    .vtiming =
-                    { .total_cyc = 635, .display_cyc = 600, .back_porch = 30, .sync_width = 5, .sync_polarity =
-                              DISPLAY_SIGNAL_POLARITY_LOACTIVE },
-                    .format = DISPLAY_OUT_FORMAT_24BITS_RGB888, .endian = DISPLAY_ENDIAN_LITTLE, .color_order =
-                            DISPLAY_COLOR_ORDER_RGB,
-                    .data_enable_polarity = DISPLAY_SIGNAL_POLARITY_HIACTIVE, .sync_edge =
-                            DISPLAY_SIGNAL_SYNC_EDGE_RISING,
-                    .bg_color =
-                    { .byte =
-                    { .a = 255, .r = 0, .g = 0, .b = 0 } },
+				/** Output configuration */
+				.output =
+						{ .htiming = { .total_cyc = 1334, .display_cyc = 1024,
+								.back_porch = 300, .sync_width = 10,
+								.sync_polarity =
+										DISPLAY_SIGNAL_POLARITY_LOACTIVE },
+								.vtiming =
+										{ .total_cyc = 635, .display_cyc = 600,
+												.back_porch = 30, .sync_width =
+														5,
+												.sync_polarity =
+														DISPLAY_SIGNAL_POLARITY_LOACTIVE },
+								.format = DISPLAY_OUT_FORMAT_24BITS_RGB888,
+								.endian = DISPLAY_ENDIAN_LITTLE, .color_order =
+										DISPLAY_COLOR_ORDER_RGB,
+								.data_enable_polarity =
+										DISPLAY_SIGNAL_POLARITY_HIACTIVE,
+								.sync_edge = DISPLAY_SIGNAL_SYNC_EDGE_RISING,
+								.bg_color = { .byte = { .a = 255, .r = 0,
+										.g = 0, .b = 0 } },
 #if (GLCDC_CFG_COLOR_CORRECTION_ENABLE)
                 .brightness =
                 {
@@ -198,34 +201,33 @@ const display_cfg_t g_lcd_glcdc_cfg =
                 .p_gamma_correction  = NULL,
 #endif
 #endif
-                    .dithering_on = false },
+								.dithering_on = false },
 
-          /** Display device callback function pointer */
-          .p_callback = lcd_glcdc_callback,
-          .p_context = NULL,
+				/** Display device callback function pointer */
+				.p_callback = lcd_glcdc_callback, .p_context = NULL,
 
-          /** Display device extended configuration */
-          .p_extend = (void*) (&g_lcd_glcdc_extend_cfg),
+				/** Display device extended configuration */
+				.p_extend = (void*) (&g_lcd_glcdc_extend_cfg),
 
-          .line_detect_ipl = (12),
-          .underflow_1_ipl = (BSP_IRQ_DISABLED), .underflow_2_ipl = (BSP_IRQ_DISABLED),
+				.line_detect_ipl = (12), .underflow_1_ipl = (BSP_IRQ_DISABLED),
+				.underflow_2_ipl = (BSP_IRQ_DISABLED),
 
 #if defined(VECTOR_NUMBER_GLCDC_LINE_DETECT)
             .line_detect_irq        = VECTOR_NUMBER_GLCDC_LINE_DETECT,
 #else
-          .line_detect_irq = FSP_INVALID_VECTOR,
+				.line_detect_irq = FSP_INVALID_VECTOR,
 #endif
 #if defined(VECTOR_NUMBER_GLCDC_UNDERFLOW_1)
             .underflow_1_irq        = VECTOR_NUMBER_GLCDC_UNDERFLOW_1,
 #else
-          .underflow_1_irq = FSP_INVALID_VECTOR,
+				.underflow_1_irq = FSP_INVALID_VECTOR,
 #endif
 #if defined(VECTOR_NUMBER_GLCDC_UNDERFLOW_2)
             .underflow_2_irq        = VECTOR_NUMBER_GLCDC_UNDERFLOW_2,
 #else
-          .underflow_2_irq = FSP_INVALID_VECTOR,
+				.underflow_2_irq = FSP_INVALID_VECTOR,
 #endif
-        };
+		};
 
 #if GLCDC_CFG_LAYER_1_ENABLE
         /** Display on GLCDC run-time configuration(for the graphics1 layer) */
@@ -289,14 +291,13 @@ const display_cfg_t g_lcd_glcdc_cfg =
 #endif
 
 /* Instance structure to use this module. */
-const display_instance_t g_lcd_glcdc =
-        { .p_ctrl = &g_lcd_glcdc_ctrl, .p_cfg = (display_cfg_t*) &g_lcd_glcdc_cfg, .p_api =
-                  (display_api_t*) &g_display_on_glcdc };
+const display_instance_t g_lcd_glcdc = { .p_ctrl = &g_lcd_glcdc_ctrl, .p_cfg =
+		(display_cfg_t*) &g_lcd_glcdc_cfg, .p_api =
+		(display_api_t*) &g_display_on_glcdc };
 const uint8_t DRW_INT_IPL = (2);
 d2_device *d2_handle;
 ioport_instance_ctrl_t g_ioport_ctrl;
-const ioport_instance_t g_ioport =
-{ .p_api = &g_ioport_on_ioport, .p_ctrl = &g_ioport_ctrl, .p_cfg = &g_bsp_pin_cfg, };
-void g_common_init(void)
-{
+const ioport_instance_t g_ioport = { .p_api = &g_ioport_on_ioport, .p_ctrl =
+		&g_ioport_ctrl, .p_cfg = &g_bsp_pin_cfg, };
+void g_common_init(void) {
 }

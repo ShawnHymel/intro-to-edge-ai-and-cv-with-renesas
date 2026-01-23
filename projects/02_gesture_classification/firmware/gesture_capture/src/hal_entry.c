@@ -39,11 +39,114 @@ typedef struct {
  * Function prototypes
  ******************************************************************************/
 
+static bool parse_csv_filename(const char *filename, uint32_t *p_num);
+static FRESULT find_next_file_number(uint32_t *file_num);
 static FRESULT collect_gesture(uint32_t file_num);
 
 /******************************************************************************
  * Functions
  ******************************************************************************/
+
+
+/* Check if filename matches XXXXXX.CSV pattern and extract number */
+static bool parse_csv_filename(const char *filename, uint32_t *p_num)
+{
+    /* Check length: should be exactly "XXXXXX.CSV" (10 chars) */
+    if (10 != strlen(filename))
+    {
+        return false;
+    }
+
+    /* Check extension */
+    if (0 != strcmp(&filename[7], "CSV"))
+    {
+        return false;
+    }
+
+    /* Check if first 6 chars are digits */
+    for (int i = 0; i < 6; i++)
+    {
+        if (('0' > filename[i]) || ('9' < filename[i]))
+        {
+            return false;
+        }
+    }
+
+    /* Check dot */
+    if ('.' != filename[6])
+    {
+        return false;
+    }
+
+    /* Extract number */
+    char num_str[7];
+    memcpy(num_str, filename, 6);
+    num_str[6] = '\0';
+    *p_num = (uint32_t)atol(num_str);
+
+    return true;
+}
+
+/* Scan SD card and find next CSV file number */
+static FRESULT find_next_file_number(uint32_t *file_num)
+{
+    FRESULT fr;
+    DIR dir;
+    FILINFO fno;
+    uint32_t max_num = 0;
+    bool found = false;
+
+    /* Open root directory */
+    fr = f_opendir(&dir, "/");
+    if (FR_OK != fr) {
+        return fr;
+    }
+
+    /* Scan all files */
+    while (1) {
+        /* Read directory entries */
+        fr = f_readdir(&dir, &fno);
+        if ((FR_OK != fr) || (0 == fno.fname[0]))
+        {
+            break;
+        }
+
+        /* Skip directories */
+        if (fno.fattrib & AM_DIR)
+        {
+            continue;
+        }
+
+        /* Check if filename matches our BMP pattern (XXXX.BMP) */
+        if (parse_csv_filename(fno.fname, file_num))
+        {
+            found = true;
+            if (*file_num > max_num)
+            {
+                max_num = *file_num;
+            }
+        }
+    }
+
+    /* Close directory */
+    fr = f_closedir(&dir);
+    if (FR_OK != fr)
+    {
+        return fr;
+    }
+
+    /* Set next file number */
+    if (found)
+    {
+        *file_num = max_num + 1;
+    }
+    else
+    {
+        *file_num = 0;
+    }
+
+    return FR_OK;
+}
 
 /* Collect gesture data and save to SD card */
 static FRESULT collect_gesture(uint32_t file_num)

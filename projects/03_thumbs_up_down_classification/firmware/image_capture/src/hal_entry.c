@@ -39,6 +39,8 @@ static uint8_t bmp_write_buffer[BMP_ROWS_PER_WRITE * BMP_ROW_BYTES];
  * Function prototypes
  ******************************************************************************/
 
+static bool parse_bmp_filename(const char *filename, uint32_t *p_num);
+static FRESULT find_next_file_number(uint32_t *file_num);
 static FRESULT save_image_as_bmp(uint32_t file_num, uint8_t *rgb565_buffer,
                                  uint16_t src_width, uint16_t src_height,
                                  uint16_t out_width, uint16_t out_height);
@@ -46,6 +48,106 @@ static FRESULT save_image_as_bmp(uint32_t file_num, uint8_t *rgb565_buffer,
 /******************************************************************************
  * Functions
  ******************************************************************************/
+
+/* Check if filename matches XXXX.BMP pattern and extract number */
+static bool parse_bmp_filename(const char *filename, uint32_t *p_num)
+{
+    /* Check length: should be exactly "XXXX.BMP" (8 chars) */
+    if (8 != strlen(filename))
+    {
+        return false;
+    }
+
+    /* Check extension */
+    if (0 != strcmp(&filename[5], "BMP"))
+    {
+        return false;
+    }
+
+    /* Check if first 4 chars are digits */
+    for (int i = 0; i < 4; i++)
+    {
+        if (('0' > filename[i]) || ('9' < filename[i]))
+        {
+            return false;
+        }
+    }
+
+    /* Check dot */
+    if ('.' != filename[4])
+    {
+        return false;
+    }
+
+    /* Extract number */
+    char num_str[5];
+    memcpy(num_str, filename, 4);
+    num_str[4] = '\0';
+    *p_num = (uint32_t)atol(num_str);
+
+    return true;
+}
+
+/* Scan SD card and find next BMP file number */
+static FRESULT find_next_file_number(uint32_t *file_num)
+{
+    FRESULT fr;
+    DIR dir;
+    FILINFO fno;
+    uint32_t max_num = 0;
+    bool found = false;
+
+    /* Open root directory */
+    fr = f_opendir(&dir, "/");
+    if (FR_OK != fr) {
+        return fr;
+    }
+
+    /* Scan all files */
+    while (1) {
+        /* Read directory entries */
+        fr = f_readdir(&dir, &fno);
+        if ((FR_OK != fr) || (0 == fno.fname[0]))
+        {
+            break;
+        }
+
+        /* Skip directories */
+        if (fno.fattrib & AM_DIR)
+        {
+            continue;
+        }
+
+        /* Check if filename matches our BMP pattern (XXXX.BMP) */
+        if (parse_bmp_filename(fno.fname, file_num))
+        {
+            found = true;
+            if (*file_num > max_num)
+            {
+                max_num = *file_num;
+            }
+        }
+    }
+
+    /* Close directory */
+    fr = f_closedir(&dir);
+    if (FR_OK != fr)
+    {
+        return fr;
+    }
+
+    /* Set next file number */
+    if (found)
+    {
+        *file_num = max_num + 1;
+    }
+    else
+    {
+        *file_num = 0;
+    }
+
+    return FR_OK;
+}
 
 /* Given a file number, save image to BMP file in the root of the SD card */
 static FRESULT save_image_as_bmp(uint32_t file_num, uint8_t *rgb565_buffer,

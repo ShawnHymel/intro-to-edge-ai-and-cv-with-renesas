@@ -8,9 +8,6 @@
 /* Generated libraries */
 #include "hal_data.h"
 
-/* Custom libraries */
-#include "fatfs/ff.h"
-
 /* Settings */
 #define DEBOUNCE_MS      40
 
@@ -29,8 +26,5 @@ uint32_t millis(void);
 void pin_write(bsp_io_port_pin_t pin, bsp_io_level_t level);
 fsp_err_t check_button_sw1(bool *pressed);
 fsp_err_t check_button_sw2(bool *pressed);
-bool parse_csv_filename(const char *filename, uint32_t *p_num);
-bool parse_bmp_filename(const char *filename, uint32_t *p_num);
-FRESULT find_next_file_number(uint32_t *file_num);
 
 #endif /* UTILS_H */
