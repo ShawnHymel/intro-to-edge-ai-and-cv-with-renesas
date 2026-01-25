@@ -90,7 +90,7 @@ void compute_sub_0004(
 //
 // Input  output_70014_10042: int8_t - 1,4
 // Output output_70014: float - 1,4
-AffineDequantizeInt8ToFloat(output_70014_10042, output_70014, 4, 0, 0.11892443150281906);
+AffineDequantizeInt8ToFloat(output_70014_10042, output_70014, 4, 0, 0.12459119409322739);
 
 
 }

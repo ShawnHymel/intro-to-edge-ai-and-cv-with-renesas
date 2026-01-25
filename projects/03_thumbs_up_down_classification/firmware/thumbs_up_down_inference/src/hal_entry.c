@@ -8,9 +8,6 @@
 #include "inference/model.h"
 #include "utils/utils.h"
 
-/* %%%TEST%%% */
-#include "test_sample.h"
-
 /******************************************************************************
  * Settings
  ******************************************************************************/
@@ -59,7 +56,11 @@ static void __attribute__((noinline)) image_resize_and_grayscale(const uint16_t 
  * Functions
  ******************************************************************************/
 
-/* Crop, resize (nearest neighbor), and convert RGB565 to grayscale */
+/**
+ * Crop, resize (nearest neighbor), and convert RGB565 to grayscale.
+ * NOTE: This is probably not the most efficient way to do this, but it should
+ * give you an idea of how we're preprocessing the image
+ */
 static void __attribute__((noinline)) image_resize_and_grayscale(const uint16_t *p_input,
 									   float *p_output,
 									   uint16_t in_width,
@@ -67,11 +68,6 @@ static void __attribute__((noinline)) image_resize_and_grayscale(const uint16_t 
 									   uint16_t out_width,
 									   uint16_t out_height)
 {
-	/* Debug: verify input RGB565 data (expect non-zero if camera working) */
-	APP_PRINT("Processing %dx%d -> %dx%d\r\n", in_width, in_height, out_width, out_height);
-	APP_PRINT("Input RGB565: [0]=0x%04X [1000]=0x%04X [38400]=0x%04X\r\n",
-			p_input[0], p_input[1000], p_input[38400]);
-
 	/* Crop image to center */
 	const uint32_t crop_offset = (in_width - in_height) / 2;
 
@@ -107,7 +103,7 @@ static void __attribute__((noinline)) image_resize_and_grayscale(const uint16_t 
 			if (g > 255.0f) g = 255.0f;
 			if (b > 255.0f) b = 255.0f;
 
-			/* Grayscale conversion using Rec. 601 coefficients */
+			/* Grayscale conversion using coefficients */
 			float gray = (GRAY_R_COEFF * r) + (GRAY_G_COEFF * g) + (GRAY_B_COEFF * b);
 			if (gray > 255.0f) gray = 255.0f;
 
@@ -127,6 +123,8 @@ void hal_entry(void)
     float* output_ptr;
     bool pressed = false;
     bool inference_pending = false;
+    uint32_t preprocess_time_us;
+    uint32_t inference_time_us;
 
     /* Initialize debugging terminal */
     TERM_INIT();
@@ -235,27 +233,20 @@ void hal_entry(void)
 				SCB_InvalidateDCache_by_Addr((uint32_t *)camera_capture_image_rgb565,
 											 (int32_t)camera_capture_image_rgb565_size);
 
-				/* Preprocess image (resize, convert to grayscale) */
+				/* Preprocess image before inference (resize, convert to grayscale) */
+				preprocess_time_us = micros();
 				image_resize_and_grayscale((const uint16_t *)camera_capture_image_rgb565,
 										   input_ptr,
 										   CAMERA_CAPTURE_IMAGE_WIDTH,
 										   CAMERA_CAPTURE_IMAGE_HEIGHT,
 										   IMG_WIDTH,
 										   IMG_HEIGHT);
-
-				/* %%%TEST%%% Debug: verify model input buffer has valid grayscale data (0-255 range) */
-				float *model_input = GetModelInputPtr_input();
-				APP_PRINT("Model input: [0]=%.1f [1152]=%.1f [2303]=%.1f\r\n",
-						  model_input[0], model_input[1152], model_input[2303]);
-
-				/* %%%TEST%%% */
-				/* Copy test data to input buffer (cast to float) */
-//				for (int i = 0; i < TEST_INPUT_SIZE; i++) {
-//					input_ptr[i] = (float)test_input[i];
-//				}
+				preprocess_time_us = micros() - preprocess_time_us;
 
 				/* Run inference (cache coherency handled by ethosu_dcache.c hooks) */
+				inference_time_us = micros();
 				RunModel(true);
+				inference_time_us = micros() - inference_time_us;
 
 				/* Find predicted class */
 				int predicted_class = 0;
@@ -269,8 +260,10 @@ void hal_entry(void)
 
 				/* Print results */
 				APP_PRINT("\r\nResults:\r\n");
-				APP_PRINT("  Predicted: %s (class %d)\r\n", class_names[predicted_class], predicted_class);
-				APP_PRINT("\r\n  Logits:\r\n");
+				APP_PRINT("  Preprocess time: %u us\r\n", preprocess_time_us);
+				APP_PRINT("  Inference time: %u us\r\n", inference_time_us);
+				APP_PRINT("  Predicted: %d (%s)\r\n", predicted_class, class_names[predicted_class]);
+				APP_PRINT("  Logits:\r\n");
 				for (int i = 0; i < NUM_CLASSES; i++) {
 					APP_PRINT("    %-15s %12.6f\r\n", class_names[i], output_ptr[i]);
 				}

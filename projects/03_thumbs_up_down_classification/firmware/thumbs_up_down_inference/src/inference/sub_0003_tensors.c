@@ -2,7 +2,7 @@
 
 const TensorInfo sub_0003_tensors[] = {
   { "_split_1_command_stream", 0, 328, "COMMAND_STREAM", 0xffffffff },
-  { "_split_1_flash", 1, 10112, "MODEL", 0xffffffff },
+  { "_split_1_flash", 1, 10128, "MODEL", 0xffffffff },
   { "_split_1_scratch", 2, 2320, "ARENA", 0x0 },
   { "_split_1_scratch_fast", 3, 2320, "FAST_SCRATCH", 0x0 },
   { "max_pool2d_1_70012_70023_10056", 4, 2304, "INPUT_TENSOR", 0x0 },
