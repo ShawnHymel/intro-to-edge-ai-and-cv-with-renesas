@@ -167,6 +167,7 @@ def build_targets(targets, anchors, anchor_masks, grid_sizes, img_size, device, 
     Returns:
         List of target dicts, one per scale
     """
+    print(f"DEBUG build_targets: batch_size = {batch_size}")
     if len(targets) == 0:
         return None
     
