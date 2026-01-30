@@ -13,7 +13,6 @@ License: Apache-2.0
 import torch
 import torch.nn as nn
 import numpy as np
-from pathlib import Path
 
 
 def parse_cfg(cfg_path):
@@ -81,10 +80,9 @@ class ConvNoBN(nn.Module):
 class YoloFastest(nn.Module):
     """YOLO-Fastest model built from config."""
     
-    def __init__(self, cfg_path, num_classes=80, input_size=192, debug=False):
+    def __init__(self, cfg_path, input_size=192, debug=False):
         super().__init__()
         self.blocks = parse_cfg(cfg_path)
-        self.num_classes = num_classes
         self.input_size = input_size
         self.debug = debug
         
@@ -111,11 +109,8 @@ class YoloFastest(nn.Module):
                 
                 # For depthwise conv (groups > 1), input channels must equal groups
                 if groups > 1:
-                    # The input should already have the right number of channels
-                    # If not, there's a bug in our tracking
-                    if in_ch != groups:
-                        if self.debug:
-                            print(f"Layer {layer_idx}: depthwise conv expects {groups} channels, got {in_ch}")
+                    if in_ch != groups and self.debug:
+                        print(f"Layer {layer_idx}: depthwise conv expects {groups} channels, got {in_ch}")
                     in_ch = groups  # Use groups as in_ch for depthwise
                 
                 module = self._make_conv(block, in_ch, out_ch)
@@ -126,8 +121,6 @@ class YoloFastest(nn.Module):
                 
             elif block['type'] == 'shortcut':
                 from_idx = int(block['from'])
-                # Darknet shortcut 'from' is relative to current layer
-                # -5 means 5 layers back
                 actual_idx = len(self.output_filters) - 1 + from_idx
                 self.output_filters.append(self.output_filters[-1])
                 
@@ -144,11 +137,8 @@ class YoloFastest(nn.Module):
                 resolved_indices = []
                 for l in layers:
                     if l > 0:
-                        # Absolute index (1-based in Darknet, but we need to offset)
-                        # Layer 80 means the 80th layer (0-indexed: 79), which is output_filters[80]
                         idx = l + 1
                     else:
-                        # Relative index from current position
                         idx = len(self.output_filters) + l
                     resolved_indices.append(idx)
                     out_ch += self.output_filters[idx]
@@ -220,13 +210,12 @@ class YoloFastest(nn.Module):
                     if l > 0:
                         resolved.append(l + 1)
                     else:
-                        resolved.append(layer_idx + 1 + l)  # +1 because outputs[0] is input
+                        resolved.append(layer_idx + 1 + l)
                 self.route_info[layer_idx] = resolved
                 
             elif block['type'] == 'shortcut':
                 from_idx = int(block['from'])
-                # Compute absolute index at build time
-                resolved = layer_idx + 1 + from_idx  # +1 because outputs[0] is input
+                resolved = layer_idx + 1 + from_idx
                 self.shortcut_info[layer_idx] = resolved
             
             layer_idx += 1
@@ -247,8 +236,6 @@ class YoloFastest(nn.Module):
             return ConvNoBN(in_ch, out_ch, kernel, stride, pad, groups, activation)
     
     def forward(self, x):
-        # outputs[0] = input
-        # outputs[i] = output of module_list[i-1]
         outputs = [x]
         yolo_outputs = []
         
