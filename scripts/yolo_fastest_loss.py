@@ -66,8 +66,13 @@ class YoloLoss(nn.Module):
         # Build targets for all scales
         if len(targets) > 0:
             all_targets = build_targets(
-                targets, self.anchors, self.anchor_masks,
-                self.grid_sizes, self.img_size, self.num_classes, device
+                targets, 
+                self.anchors,
+                self.anchor_masks,
+                self.grid_sizes, 
+                self.img_size,
+                device,
+                batch_size
             )
         else:
             all_targets = None

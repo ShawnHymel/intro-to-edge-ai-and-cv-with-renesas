@@ -151,7 +151,7 @@ def box_iou_wh(wh1, wh2):
     return inter / (union + 1e-16)
 
 
-def build_targets(targets, anchors, anchor_masks, grid_sizes, img_size, num_classes, device):
+def build_targets(targets, anchors, anchor_masks, grid_sizes, img_size, device, batch_size):
     """
     Build target tensors for YOLO loss computation.
     
@@ -161,22 +161,15 @@ def build_targets(targets, anchors, anchor_masks, grid_sizes, img_size, num_clas
         anchor_masks: List of lists, anchor indices for each scale
         grid_sizes: List of grid sizes for each scale (e.g., [6, 12])
         img_size: Input image size (assumes square)
-        num_classes: Number of classes
         device: Torch device
+        batch_size: Actual batch size from predictions
         
     Returns:
-        List of target dicts, one per scale, each containing:
-            - obj_mask: [batch, num_anchors, H, W] bool tensor
-            - noobj_mask: [batch, num_anchors, H, W] bool tensor  
-            - tx, ty, tw, th: Target box parameters
-            - tcls: Target class indices
-            - tbox: Target boxes for CIoU computation
-            - indices: (batch_idx, anchor_idx, grid_j, grid_i) for indexing
+        List of target dicts, one per scale
     """
     if len(targets) == 0:
         return None
     
-    batch_size = int(targets[:, 0].max().item()) + 1
     num_scales = len(grid_sizes)
     
     # Convert anchors to tensor
