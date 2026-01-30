@@ -62,12 +62,6 @@ class YoloLoss(nn.Module):
         """
         device = predictions[0].device
         batch_size = predictions[0].shape[0]
-
-        # %%%TEST
-        print(f"DEBUG: batch_size from predictions = {batch_size}")
-        print(f"DEBUG: targets shape = {targets.shape}")
-        if len(targets) > 0:
-            print(f"DEBUG: max batch_idx in targets = {targets[:, 0].max().item()}")
         
         # Build targets for all scales
         if len(targets) > 0:
@@ -107,8 +101,6 @@ class YoloLoss(nn.Module):
             if all_targets is not None:
                 scale_targets = all_targets[scale_idx]
                 obj_mask = scale_targets['obj_mask']
-                print(f"DEBUG: obj_mask shape = {obj_mask.shape}")
-                print(f"DEBUG: obj_pred shape = {obj_pred.shape}")
                 noobj_mask = scale_targets['noobj_mask']
                 tbox = scale_targets['tbox']
                 indices = scale_targets['indices']
