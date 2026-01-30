@@ -4,6 +4,8 @@ yolo_fastest_to_pytorch.py
 Convert YOLO-Fastest Darknet models to PyTorch by parsing given config and
 weights file.
 
+https://github.com/dog-qiuqiu/Yolo-Fastest
+
 Full disclosure: this was written almost entirely by Claude AI. If you find any
 issues with the script, please let me know.
 

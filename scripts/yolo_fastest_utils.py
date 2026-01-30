@@ -3,6 +3,8 @@ yolo_fastest_utils.py
 
 Utility functions for YOLO-Fastest V1 training and inference.
 
+https://github.com/dog-qiuqiu/Yolo-Fastest
+
 Full disclosure: this was written almost entirely by Claude AI. If you find any
 issues with the script, please let me know.
 
