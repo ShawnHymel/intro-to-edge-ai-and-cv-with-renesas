@@ -1,5 +1,5 @@
 """
-YoloFastest2PyTorch.py
+yolo_fastest_to_pytorch.py
 
 Convert YOLO-Fastest Darknet models to PyTorch by parsing given config and
 weights file.
