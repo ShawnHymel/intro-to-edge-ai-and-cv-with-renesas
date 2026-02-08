@@ -98,7 +98,7 @@
 #define BSP_TZ_CFG_PSARB (\
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 4) /* I3C */ | \
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 7) /* IIC2 */ | \
-            (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 8) /* IIC1 */ | \
+            (((1 > 0) ? 0U : 1U) << 8) /* IIC1 */ | \
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 9) /* IIC0 */ | \
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 11) /* USBFS */ | \
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 12) /* USBHS */ | \
@@ -115,7 +115,7 @@
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 28) /* SCI3 */ | \
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 29) /* SCI2 */ | \
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 30) /* SCI1 */ | \
-            (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 31) /* SCI0 */)
+            (((1 > 0) ? 0U : 1U) << 31) /* SCI0 */)
 #endif
 #ifndef BSP_TZ_CFG_PSARC
 #define BSP_TZ_CFG_PSARC (\
@@ -126,7 +126,7 @@
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 11) /* SDHI1 */ | \
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 12) /* SDHI0 */ | \
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 13) /* DOC */ | \
-            (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 15) /* GLCDC/MIPI-DSI/DRW */ | \
+            (((1 > 0) ? 0U : 1U) << 15) /* GLCDC/MIPI-DSI/DRW */ | \
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 15) /* MIPI_CSI */ | \
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 16) /* CEU */ | \
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 24) /* PDM */ | \
@@ -164,7 +164,7 @@
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 9) /* ULPT0 */ | \
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 15) /* GPT COMMON */ | \
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 18) /* GPT13 */ | \
-            (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 19) /* GPT12 */ | \
+            (((1 > 0) ? 0U : 1U) << 19) /* GPT12 */ | \
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 20) /* GPT11 */ | \
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 21) /* GPT10 */ | \
             (((RA_NOT_DEFINED > 0) ? 0U : 1U) << 27) /* GPT4 */ | \
@@ -427,7 +427,7 @@
 
 #ifndef BSP_CFG_DCACHE_ENABLED
 #if (0U == BSP_CFG_CPU_CORE)
-#define BSP_CFG_DCACHE_ENABLED (0)
+#define BSP_CFG_DCACHE_ENABLED (1)
 #else
     #define BSP_CFG_DCACHE_ENABLED (0)
  #endif
@@ -482,15 +482,15 @@
 #endif
 
 #ifndef BSP_CFG_SDRAM_INIT_ARFI
-#define BSP_CFG_SDRAM_INIT_ARFI  (10)
+#define BSP_CFG_SDRAM_INIT_ARFI  (6)
 #endif
 
 #ifndef BSP_CFG_SDRAM_INIT_ARFC
-#define BSP_CFG_SDRAM_INIT_ARFC  (8)
+#define BSP_CFG_SDRAM_INIT_ARFC  (2)
 #endif
 
 #ifndef BSP_CFG_SDRAM_INIT_PRC
-#define BSP_CFG_SDRAM_INIT_PRC  (3)
+#define BSP_CFG_SDRAM_INIT_PRC  (6)
 #endif
 
 #ifndef BSP_CFG_SDRAM_MULTIPLEX_ADDR_SHIFT

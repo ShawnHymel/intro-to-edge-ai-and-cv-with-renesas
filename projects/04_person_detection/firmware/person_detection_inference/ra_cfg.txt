@@ -31,9 +31,9 @@ FSP Configuration
     SDRAM: Timings: tCL (cycles): 3 cycles
     SDRAM: Timings: tRFC (cycles): 781
     SDRAM: Timings: tREFW (cycles): 6 cycles
-    SDRAM: Initialization: Auto-Refresh Interval (ARFI): 10 cycles
-    SDRAM: Initialization: Auto-Refresh Count (ARFC): 8 times
-    SDRAM: Initialization: Precharge Cycle Count (PRC): 3 cycles
+    SDRAM: Initialization: Auto-Refresh Interval (ARFI): 6 cycles
+    SDRAM: Initialization: Auto-Refresh Count (ARFC): 2 times
+    SDRAM: Initialization: Precharge Cycle Count (PRC): 6 cycles
     SDRAM: Address Multiplex Shift: 9-bit shift
     SDRAM: Endian Mode: Little Endian
     SDRAM: Continuous Access Mode: Enabled
@@ -66,7 +66,7 @@ FSP Configuration
     Clocks: MSTP Change Delays: Enabled
     Clocks: Settling Delay (us): 30
     Main Oscillator Wait Time: 8163 cycles
-    Cache settings: Data cache: Disabled
+    Cache settings: Data cache: Enabled
     Cache settings: Data cache forced write-through: Disabled
     I/O Ports: Voltage Mode: VCC: High (VCC >= 2.7 V)
     I/O Ports: Voltage Mode: VCC2: High (VCC2 >= 2.7 V)
@@ -362,7 +362,7 @@ FSP Configuration
       P105 N7 OSPI0_OM_0_ECSINT1 OSPI_ECS_ARDUINO_D6 H None "Peripheral mode" - - "ADC(Digital): ADSYNC; ESWM_GMII/MII: GPTP0_CAPTURE; ESWM_RGMII0: GPTP0_CAPTURE; ESWM_RMII0: GPTP0_CAPTURE; GPT1: GTIOC1A; IRQ: IRQ0; OSPI0: OM_0_ECSINT1; SCI8: CTS_RTS8; SCI8: DE8; SPI1: SSLB2; ULPT1: ULPTO1-DS" "See SW4 in manual" IO - - 
       P106 N6 OSPI0_OM_0_RESET OSPI_RESET H None "Peripheral mode" - - "ADC1(Digital): ADST1; AGT0: AGTOB0; ESWM_GMII/MII: ET1_LINKSTA; ESWM_RGMII1: ET1_LINKSTA; ESWM_RMII1: ET1_LINKSTA; GPT8: GTIOC8B; GPT_OPS: GTOWLO; IRQ: IRQ16; OSPI0: OM_0_RESET; SCI8: CTS8; SPI1: SSLB3; ULPT1: ULPTEE1-DS" "See SW4 in manual" IO - - 
       P107 N5 GPIO ETHERNET_MDINT - IRQ31 "Input mode" - - "ADC0(Digital): ADST0; AGT0: AGTOA0; ESWM_GMII/MII: ET1_INT; ESWM_RGMII1: ET1_INT; ESWM_RMII1: ET1_INT; GPT8: GTIOC8A; GPT_OPS: GTOWUP; IRQ: IRQ31; OSPI0: OM_0_CS0; SCI4: CTS4" - IO - - 
-      P108 D8 - J2_30 - - Disabled - - "GPT10: GTIOC10B; IRQ: IRQ24; SDHI0: SD0DAT6" "Enable when connected" None - - 
+      P108 D8 GPIO MIPI_IF_EN L - "Output mode (Initial High)" - - "GPT10: GTIOC10B; IRQ: IRQ24; SDHI0: SD0DAT6" "Enable when connected" IO - - 
       P109 D7 GPIO I3C_SDA_PU M - "Output mode (Initial High)" - - "GPT10: GTIOC10A; IRQ: IRQ23; SDHI0: SD0DAT5" "Enable I3C_SEL_L to use" IO - - 
       P110 C8 - ARDUINO_D9 - - Disabled - - "GPT9: GTIOC9B; IRQ: IRQ20; SDHI0: SD0DAT4" "Enable when connected" None - - 
       P111 E8 GPIO MIPI_INT - IRQ19 "Input mode" - - "GPT9: GTIOC9A; IRQ: IRQ19; SDHI0: SD0DAT3" "See SW4 in manual" IO - - 
@@ -428,10 +428,10 @@ FSP Configuration
       P514 R14 GPIO DISP_BLEN M - "Output mode (Initial Low)" - - "ESWM_GMII/MII: ET_TAS_STA1; ESWM_RGMII: ET_TAS_STA1; ESWM_RMII: ET_TAS_STA1; GLCDC: LCD_EXTCLK; GPT13: GTIOC13B; IIC2: SDA2; IRQ: IRQ13; SCI4: DE4; SCI4: SCK4" - IO - - 
       P515 P15 GLCDC_LCD_CLK DISP_CLK H None "Peripheral mode" - - "ESWM_GMII/MII: ET_TAS_STA0; ESWM_RGMII: ET_TAS_STA0; ESWM_RMII: ET_TAS_STA0; GLCDC: LCD_CLK; GPT13: GTIOC13A; IIC2: SCL2; IRQ: IRQ12; SCI4: CTS_RTS4; SCI4: DE4" "Enable when connected" O - - 
       P600 P3 GPIO USER_LED_BLUE H - "Output mode (Initial Low)" - - "CAC: CACREF; ESWM_GMII/MII: ET1_WOL; ESWM_RGMII1: ET1_WOL; ESWM_RMII1: ET1_WOL; GPT6: GTIOC6B; IRQ: IRQ30; OSPI0: OM_0_RSTO1; ULPT1: ULPTEVI1-DS" - IO - - 
-      P601 P4 - PMOD2_RTS_SSL - - Disabled - - "GPT6: GTIOC6A; IRQ: IRQ29; OSPI0: OM_0_WP1; RTC: RTCOUT; SCI0: DE0; SCI0: SCK0; ULPT0: ULPTEVI0" "See E16 / E14 in manual" None - - 
-      P602 P2 - PMOD2_RX - - Disabled - - "GPT7: GTIOC7B; IRQ: IRQ28; OSPI1: OM_1_SCLKN; SCI0: RXD0; ULPT0: ULPTEE0" - None - - 
-      P603 P1 - PMOD2_TX - - Disabled - - "GPT7: GTIOC7A; IRQ: IRQ27; OSPI1: OM_1_SCLK; SCI0: TXD0; ULPT0: ULPTO0" - None - - 
-      P604 N2 - PMOD2_CTS - - Disabled - - "GPT8: GTIOC8B; IRQ: IRQ26; OSPI1: OM_1_SIO7; SCI0: CTS_RTS0; SCI0: DE0" "See E14 / E15 in manual" None - - 
+      P601 P4 SCI0_SCK0 PMOD2_RTS_SSL L None "Peripheral mode" - - "GPT6: GTIOC6A; IRQ: IRQ29; OSPI0: OM_0_WP1; RTC: RTCOUT; SCI0: DE0; SCI0: SCK0; ULPT0: ULPTEVI0" "See E16 / E14 in manual" IO - - 
+      P602 P2 SCI0_RXD0 PMOD2_RX L None "Peripheral mode" - - "GPT7: GTIOC7B; IRQ: IRQ28; OSPI1: OM_1_SCLKN; SCI0: RXD0; ULPT0: ULPTEE0" - I - - 
+      P603 P1 SCI0_TXD0 PMOD2_TX L None "Peripheral mode" - - "GPT7: GTIOC7A; IRQ: IRQ27; OSPI1: OM_1_SCLK; SCI0: TXD0; ULPT0: ULPTO0" - O - - 
+      P604 N2 GPIO PMOD2_CTS L - "Output mode (Initial High)" - - "GPT8: GTIOC8B; IRQ: IRQ26; OSPI1: OM_1_SIO7; SCI0: CTS_RTS0; SCI0: DE0" "See E14 / E15 in manual" IO - - 
       P605 N1 - PMOD2_SSL - - Disabled - - "GPT8: GTIOC8A; IRQ: IRQ25; OSPI1: OM_1_SIO1; SCI0: CTS0" "See E10 in manual" None - - 
       P606 N3 GPIO DISP_RESET M - "Output mode (Initial Low)" - - "BUS: BC3; BUS: WR3; IRQ: IRQ24; OSPI1: OM_1_SIO6" - IO - - 
       P607 M2 SDRAM_DQ31 SDRAM_DQ31 H None "Peripheral mode" - - "BUS: D31; IRQ: IRQ23; OSPI1: OM_1_DQS; SDRAM: DQ31" - IO - - 
@@ -652,7 +652,7 @@ FSP Configuration
       P105 N7 - OSPI_ECS_ARDUINO_D6 L None Disabled - - "ADC(Digital): ADSYNC; ESWM_GMII/MII: GPTP0_CAPTURE; ESWM_RGMII0: GPTP0_CAPTURE; ESWM_RMII0: GPTP0_CAPTURE; GPT1: GTIOC1A; IRQ: IRQ0; OSPI0: OM_0_ECSINT1; SCI8: CTS_RTS8; SCI8: DE8; SPI1: SSLB2; ULPT1: ULPTO1-DS" "See SW4 in manual" IO - - 
       P106 N6 - OSPI_RESET L None Disabled - - "ADC1(Digital): ADST1; AGT0: AGTOB0; ESWM_GMII/MII: ET1_LINKSTA; ESWM_RGMII1: ET1_LINKSTA; ESWM_RMII1: ET1_LINKSTA; GPT8: GTIOC8B; GPT_OPS: GTOWLO; IRQ: IRQ16; OSPI0: OM_0_RESET; SCI8: CTS8; SPI1: SSLB3; ULPT1: ULPTEE1-DS" "See SW4 in manual" IO - - 
       P107 N5 - ETHERNET_MDINT - None Disabled - - "ADC0(Digital): ADST0; AGT0: AGTOA0; ESWM_GMII/MII: ET1_INT; ESWM_RGMII1: ET1_INT; ESWM_RMII1: ET1_INT; GPT8: GTIOC8A; GPT_OPS: GTOWUP; IRQ: IRQ31; OSPI0: OM_0_CS0; SCI4: CTS4" - IO - - 
-      P108 D8 - J2_30 - - Disabled - - "GPT10: GTIOC10B; IRQ: IRQ24; SDHI0: SD0DAT6" "Enable when connected" None - - 
+      P108 D8 - MIPI_IF_EN L - Disabled - - "GPT10: GTIOC10B; IRQ: IRQ24; SDHI0: SD0DAT6" "Enable when connected" IO - - 
       P109 D7 - I3C_SDA_PU L - Disabled - - "GPT10: GTIOC10A; IRQ: IRQ23; SDHI0: SD0DAT5" "Enable I3C_SEL_L to use" IO - - 
       P110 C8 - ARDUINO_D9 - - Disabled - - "GPT9: GTIOC9B; IRQ: IRQ20; SDHI0: SD0DAT4" "Enable when connected" None - - 
       P111 E8 - MIPI_INT - None Disabled - - "GPT9: GTIOC9A; IRQ: IRQ19; SDHI0: SD0DAT3" "See SW4 in manual" IO - - 
@@ -718,10 +718,10 @@ FSP Configuration
       P514 R14 - DISP_BLEN L - Disabled - - "ESWM_GMII/MII: ET_TAS_STA1; ESWM_RGMII: ET_TAS_STA1; ESWM_RMII: ET_TAS_STA1; GLCDC: LCD_EXTCLK; GPT13: GTIOC13B; IIC2: SDA2; IRQ: IRQ13; SCI4: DE4; SCI4: SCK4" - IO - - 
       P515 P15 - DISP_CLK L None Disabled - - "ESWM_GMII/MII: ET_TAS_STA0; ESWM_RGMII: ET_TAS_STA0; ESWM_RMII: ET_TAS_STA0; GLCDC: LCD_CLK; GPT13: GTIOC13A; IIC2: SCL2; IRQ: IRQ12; SCI4: CTS_RTS4; SCI4: DE4" "Enable when connected" O - - 
       P600 P3 - USER_LED_BLUE L - Disabled - - "CAC: CACREF; ESWM_GMII/MII: ET1_WOL; ESWM_RGMII1: ET1_WOL; ESWM_RMII1: ET1_WOL; GPT6: GTIOC6B; IRQ: IRQ30; OSPI0: OM_0_RSTO1; ULPT1: ULPTEVI1-DS" - IO - - 
-      P601 P4 - PMOD2_RTS_SSL - - Disabled - - "GPT6: GTIOC6A; IRQ: IRQ29; OSPI0: OM_0_WP1; RTC: RTCOUT; SCI0: DE0; SCI0: SCK0; ULPT0: ULPTEVI0" "See E16 / E14 in manual" None - - 
-      P602 P2 - PMOD2_RX - - Disabled - - "GPT7: GTIOC7B; IRQ: IRQ28; OSPI1: OM_1_SCLKN; SCI0: RXD0; ULPT0: ULPTEE0" - None - - 
-      P603 P1 - PMOD2_TX - - Disabled - - "GPT7: GTIOC7A; IRQ: IRQ27; OSPI1: OM_1_SCLK; SCI0: TXD0; ULPT0: ULPTO0" - None - - 
-      P604 N2 - PMOD2_CTS - - Disabled - - "GPT8: GTIOC8B; IRQ: IRQ26; OSPI1: OM_1_SIO7; SCI0: CTS_RTS0; SCI0: DE0" "See E14 / E15 in manual" None - - 
+      P601 P4 - PMOD2_RTS_SSL L None Disabled - - "GPT6: GTIOC6A; IRQ: IRQ29; OSPI0: OM_0_WP1; RTC: RTCOUT; SCI0: DE0; SCI0: SCK0; ULPT0: ULPTEVI0" "See E16 / E14 in manual" IO - - 
+      P602 P2 - PMOD2_RX L None Disabled - - "GPT7: GTIOC7B; IRQ: IRQ28; OSPI1: OM_1_SCLKN; SCI0: RXD0; ULPT0: ULPTEE0" - I - - 
+      P603 P1 - PMOD2_TX L None Disabled - - "GPT7: GTIOC7A; IRQ: IRQ27; OSPI1: OM_1_SCLK; SCI0: TXD0; ULPT0: ULPTO0" - O - - 
+      P604 N2 - PMOD2_CTS L - Disabled - - "GPT8: GTIOC8B; IRQ: IRQ26; OSPI1: OM_1_SIO7; SCI0: CTS_RTS0; SCI0: DE0" "See E14 / E15 in manual" IO - - 
       P605 N1 - PMOD2_SSL - - Disabled - - "GPT8: GTIOC8A; IRQ: IRQ25; OSPI1: OM_1_SIO1; SCI0: CTS0" "See E10 in manual" None - - 
       P606 N3 - DISP_RESET L - Disabled - - "BUS: BC3; BUS: WR3; IRQ: IRQ24; OSPI1: OM_1_SIO6" - IO - - 
       P607 M2 - SDRAM_DQ31 L None Disabled - - "BUS: D31; IRQ: IRQ23; OSPI1: OM_1_DQS; SDRAM: DQ31" - IO - - 
@@ -909,10 +909,17 @@ FSP Configuration
       VSS_USB T17 CGC_VSS_USB - - - - - - - - IO "Read only" - 
     
   User Events
-    SCI8 ERI (Receive error): sci_b_uart_eri_isr
     SCI8 RXI (Receive data full): sci_b_uart_rxi_isr
-    SCI8 TEI (Transmit end): sci_b_uart_tei_isr
     SCI8 TXI (Transmit data empty): sci_b_uart_txi_isr
+    SCI8 TEI (Transmit end): sci_b_uart_tei_isr
+    SCI8 ERI (Receive error): sci_b_uart_eri_isr
+    MIPICSI DL (Data Lane interrupt): mipi_csi_dl_isr
+    MIPICSI GST (Generic Short Packet interrupt): mipi_csi_gst_isr
+    MIPICSI PM (Power Management interrupt): mipi_csi_pm_isr
+    MIPICSI RX (Receive interrupt): mipi_csi_rx_isr
+    MIPICSI VC (Virtual Channel interrupt): mipi_csi_vc_isr
+    VIN ERR (Interrupt Request for SYNC Error): vin_err_isr
+    VIN IRQ (Interrupt Request): vin_irq_isr
     
   User Event Links
     
@@ -926,8 +933,27 @@ FSP Configuration
     
   Module "Timer, General PWM (r_gpt)"
     Parameter Checking: Default (BSP)
-    Pin Output Support: Disabled
+    Pin Output Support: Enabled
     Write Protect Enable: Disabled
+    
+  Module "I2C Master (r_iic_master)"
+    Parameter Checking: Default (BSP)
+    DTC on Transmission and Reception: Disabled
+    10-bit slave addressing: Disabled
+    
+  Module "D/AVE 2D Port Interface (r_drw)"
+    Allow Indirect Mode: Enabled
+    Memory Allocation: Default
+    
+  Module "D/AVE 2D (r_drw)"
+  Module "Graphics LCD (r_glcdc)"
+    Parameter Checking: Default (BSP)
+    Color Correction: Off
+    
+  Module "SPI (r_sci_b_spi)"
+    Parameter Checking: Default (BSP)
+    Enable Support for using a Transfer API: Enabled
+    FIFO Support: Disabled
     
   Module "Arm Ethos-U Core Driver Wrapper (rm_ethosu)"
     Parameter Checking: Default (BSP)
@@ -943,11 +969,270 @@ FSP Configuration
       4th Port ELC Trigger Source: Disabled
       Pin Configuration Name: g_bsp_pin_cfg
       
+    Instance "g_cam_i2c_master I2C Master (r_iic_master)"
+      Name: g_cam_i2c_master
+      Channel: 1
+      Rate: Fast-mode
+      Custom Rate (bps): 0
+      Rise Time (ns): 120
+      Fall Time (ns): 120
+      Duty Cycle (%): 50
+      Slave Address: 0x00
+      Address Mode: 7-Bit
+      Timeout Mode: Short Mode
+      Timeout during SCL Low: Enabled
+      Callback: g_cam_i2c_master_user_callback
+      Interrupt Priority Level: Priority 8
+      
+    Instance "g_cam_clk Timer, General PWM (r_gpt)"
+      General: Name: g_cam_clk
+      General: Channel: 12
+      General: Mode: Periodic
+      General: Period: 24000
+      General: Compare Match: Compare Match A: Status: Disabled
+      General: Compare Match: Compare Match A: Compare match value: 0
+      General: Compare Match: Compare Match B: Status: Disabled
+      General: Compare Match: Compare Match B: Compare match value: 0
+      General: Compare Match: Compare Match C: Status: Disabled
+      General: Compare Match: Compare Match C: Compare match value: 0x10000
+      General: Compare Match: Compare Match D: Status: Disabled
+      General: Compare Match: Compare Match D: Compare match value: 0x10000
+      General: Compare Match: Compare Match E: Status: Disabled
+      General: Compare Match: Compare Match E: Compare match value: 0x10000
+      General: Compare Match: Compare Match F: Status: Disabled
+      General: Compare Match: Compare Match F: Compare match value: 0x10000
+      General: Period Unit: Kilohertz
+      Output: Custom Waveform: GTIOA: Initial Output Level: Pin Level Low
+      Output: Custom Waveform: GTIOA: Cycle End Output Level: Pin Level Retain
+      Output: Custom Waveform: GTIOA: Compare Match Output Level: Pin Level Retain
+      Output: Custom Waveform: GTIOA: Retain Output Level at Count Stop: Disabled
+      Output: Custom Waveform: GTIOB: Initial Output Level: Pin Level Low
+      Output: Custom Waveform: GTIOB: Cycle End Output Level: Pin Level Retain
+      Output: Custom Waveform: GTIOB: Compare Match Output Level: Pin Level Retain
+      Output: Custom Waveform: GTIOB: Retain Output Level at Count Stop: Disabled
+      Output: Custom Waveform: Custom Waveform Enable: Disabled
+      Output: Duty Cycle Percent (only applicable in PWM mode): 50
+      Output: GTIOCA Output Enabled: True
+      Output: GTIOCA Stop Level: Pin Level Low
+      Output: GTIOCB Output Enabled: False
+      Output: GTIOCB Stop Level: Pin Level Low
+      Input: Count Up Source: 
+      Input: Count Down Source: 
+      Input: Start Source: 
+      Input: Stop Source: 
+      Input: Clear Source: 
+      Input: Capture A Source: 
+      Input: Capture B Source: 
+      Input: Noise Filter A Sampling Clock Select: No Filter
+      Input: Noise Filter B Sampling Clock Select: No Filter
+      Pin Polarity: GTIOCnA Polarity: Normal
+      Pin Polarity: GTIOCnB Polarity: Normal
+      Interrupts: Callback: NULL
+      Interrupts: Overflow/Crest Interrupt Priority: Disabled
+      Interrupts: Capture/Compare match A Interrupt Priority: Disabled
+      Interrupts: Capture/Compare match B Interrupt Priority: Disabled
+      Interrupts: Compare Match C Interrupt Priority: Disabled
+      Interrupts: Compare Match D Interrupt Priority: Disabled
+      Interrupts: Compare Match E Interrupt Priority: Disabled
+      Interrupts: Compare Match F Interrupt Priority: Disabled
+      Interrupts: Underflow/Trough Interrupt Priority: Disabled
+      Extra Features: Extra Features: Disabled
+      Extra Features: Output Disable: POEG Link: POEG Channel 0
+      Extra Features: Output Disable: Output Disable POEG Trigger: 
+      Extra Features: ADC Trigger: Start Event Trigger (Channels with GTINTAD only): 
+      Extra Features: ADC Trigger: ADC A Compare Match (Raw Counts): 0
+      Extra Features: ADC Trigger: ADC B Compare Match (Raw Counts): 0
+      Extra Features: Dead Time (Value range varies with Channel): Dead Time Count Up (Raw Counts): 0
+      Extra Features: Dead Time (Value range varies with Channel): Dead Time Count Down (Raw Counts) (Channels with GTDVD only): 0
+      Extra Features: Interrupt Skipping (Channels with GTITC only): Interrupt to Count: None
+      Extra Features: Interrupt Skipping (Channels with GTITC only): Interrupt Skip Count: 0
+      Extra Features: Interrupt Skipping (Channels with GTITC only): Skip ADC Events: None
+      Extra Features: Output Disable: GTIOCA Disable Setting: Disable Prohibited
+      Extra Features: Output Disable: GTIOCB Disable Setting: Disable Prohibited
+      
+    Instance "D/AVE 2D Port Interface (r_drw)"
+      D2 Device Handle Name: d2_handle
+      DRW Interrupt Priority: Priority 2
+      
+      Instance "D/AVE 2D (r_drw)"
+    Instance "g_lcd_glcdc Graphics LCD (r_glcdc)"
+      General: Name: g_lcd_glcdc
+      Interrupts: Callback Function: lcd_glcdc_callback
+      Interrupts: Line Detect Interrupt Priority: Priority 12
+      Interrupts: Underflow 1 Interrupt Priority: Disabled
+      Interrupts: Underflow 2 Interrupt Priority: Disabled
+      Input: Graphics Layer 1: General: Enabled: Yes
+      Input: Graphics Layer 1: General: Horizontal size: 1024
+      Input: Graphics Layer 1: General: Vertical size: 600
+      Input: Graphics Layer 1: General: Horizontal position: 0
+      Input: Graphics Layer 1: General: Vertical position: 0
+      Input: Graphics Layer 1: Framebuffer: Framebuffer name: fb_background
+      Input: Graphics Layer 1: Framebuffer: Number of framebuffers: 2
+      Input: Graphics Layer 1: Framebuffer: Section for framebuffer allocation: .sdram_noinit
+      Input: Graphics Layer 1: General: Color format: RGB565 (16-bit)
+      Input: Graphics Layer 1: General: Line descending mode: Disabled
+      Input: Graphics Layer 1: Line Repeat: Enable: Off
+      Input: Graphics Layer 1: Line Repeat: Repeat count: 0
+      Input: Graphics Layer 1: Fading: Mode: None
+      Input: Graphics Layer 1: Fading: Speed: 0
+      Input: Graphics Layer 2: General: Enabled: No
+      Input: Graphics Layer 2: General: Horizontal size: 320
+      Input: Graphics Layer 2: General: Vertical size: 600
+      Input: Graphics Layer 2: General: Horizontal position: 700
+      Input: Graphics Layer 2: General: Vertical position: 0
+      Input: Graphics Layer 2: Framebuffer: Framebuffer name: fb_foreground
+      Input: Graphics Layer 2: Framebuffer: Number of framebuffers: 1
+      Input: Graphics Layer 2: Framebuffer: Section for framebuffer allocation: .sdram_noinit
+      Input: Graphics Layer 2: General: Color format: RGB565 (16-bit)
+      Input: Graphics Layer 2: General: Line descending mode: Disabled
+      Input: Graphics Layer 2: Line Repeat: Enable: Off
+      Input: Graphics Layer 2: Line Repeat: Repeat count: 0
+      Input: Graphics Layer 2: Fading: Mode: None
+      Input: Graphics Layer 2: Fading: Speed: 0
+      Output: Timing: Horizontal total cycles: 1334
+      Output: Timing: Horizontal active video cycles: 1024
+      Output: Timing: Horizontal back porch cycles: 300
+      Output: Timing: Horizontal sync signal cycles: 10
+      Output: Timing: Horizontal sync signal polarity: Low active
+      Output: Timing: Vertical total lines: 635
+      Output: Timing: Vertical active video lines: 600
+      Output: Timing: Vertical back porch lines: 30
+      Output: Timing: Vertical sync signal lines: 5
+      Output: Timing: Vertical sync signal polarity: Low active
+      Output: Timing: Data Enable Signal Polarity: High active
+      Output: Timing: Sync edge: Rising edge
+      Output: Format: Color format: 24bits RGB888
+      Output: Format: Color order: RGB
+      Output: Format: Endian: Little endian
+      Output: Background: Alpha: 255
+      Output: Background: Red: 0
+      Output: Background: Green: 0
+      Output: Background: Blue: 0
+      CLUT: Enabled: No
+      CLUT: Size: 256
+      TCON: Hsync pin select: LCD_TCON1
+      TCON: Vsync pin select: LCD_TCON0
+      TCON: Data enable (DE) pin select: LCD_TCON2
+      TCON: Panel clock source: Internal clock (GLCDCLK)
+      TCON: Panel clock division ratio: 1/4
+      Color Correction: Process order: Brightness/contrast first
+      Color Correction: Brightness: Enabled: No
+      Color Correction: Brightness: Red channel: 512
+      Color Correction: Brightness: Green channel: 512
+      Color Correction: Brightness: Blue channel: 512
+      Color Correction: Contrast: Enabled: No
+      Color Correction: Contrast: Red channel gain: 128
+      Color Correction: Contrast: Green channel gain: 128
+      Color Correction: Contrast: Blue channel gain: 128
+      Color Correction: Gamma: Red: Off
+      Color Correction: Gamma: Green: Off
+      Color Correction: Gamma: Blue: Off
+      Color Correction: Gamma: Table Mode: Variable
+      Color Correction: Gamma: Tables: Red: Gain: 0: 1024
+      Color Correction: Gamma: Tables: Red: Gain: 1: 1024
+      Color Correction: Gamma: Tables: Red: Gain: 2: 1024
+      Color Correction: Gamma: Tables: Red: Gain: 3: 1024
+      Color Correction: Gamma: Tables: Red: Gain: 4: 1024
+      Color Correction: Gamma: Tables: Red: Gain: 5: 1024
+      Color Correction: Gamma: Tables: Red: Gain: 6: 1024
+      Color Correction: Gamma: Tables: Red: Gain: 7: 1024
+      Color Correction: Gamma: Tables: Red: Gain: 8: 1024
+      Color Correction: Gamma: Tables: Red: Gain: 9: 1024
+      Color Correction: Gamma: Tables: Red: Gain: 10: 1024
+      Color Correction: Gamma: Tables: Red: Gain: 11: 1024
+      Color Correction: Gamma: Tables: Red: Gain: 12: 1024
+      Color Correction: Gamma: Tables: Red: Gain: 13: 1024
+      Color Correction: Gamma: Tables: Red: Gain: 14: 1024
+      Color Correction: Gamma: Tables: Red: Gain: 15: 1024
+      Color Correction: Gamma: Tables: Red: Threshold: 1: 64
+      Color Correction: Gamma: Tables: Red: Threshold: 2: 128
+      Color Correction: Gamma: Tables: Red: Threshold: 3: 192
+      Color Correction: Gamma: Tables: Red: Threshold: 4: 256
+      Color Correction: Gamma: Tables: Red: Threshold: 5: 320
+      Color Correction: Gamma: Tables: Red: Threshold: 6: 384
+      Color Correction: Gamma: Tables: Red: Threshold: 7: 448
+      Color Correction: Gamma: Tables: Red: Threshold: 8: 512
+      Color Correction: Gamma: Tables: Red: Threshold: 9: 576
+      Color Correction: Gamma: Tables: Red: Threshold: 10: 640
+      Color Correction: Gamma: Tables: Red: Threshold: 11: 704
+      Color Correction: Gamma: Tables: Red: Threshold: 12: 768
+      Color Correction: Gamma: Tables: Red: Threshold: 13: 832
+      Color Correction: Gamma: Tables: Red: Threshold: 14: 896
+      Color Correction: Gamma: Tables: Red: Threshold: 15: 960
+      Color Correction: Gamma: Tables: Green: Gain: 0: 1024
+      Color Correction: Gamma: Tables: Green: Gain: 1: 1024
+      Color Correction: Gamma: Tables: Green: Gain: 2: 1024
+      Color Correction: Gamma: Tables: Green: Gain: 3: 1024
+      Color Correction: Gamma: Tables: Green: Gain: 4: 1024
+      Color Correction: Gamma: Tables: Green: Gain: 5: 1024
+      Color Correction: Gamma: Tables: Green: Gain: 6: 1024
+      Color Correction: Gamma: Tables: Green: Gain: 7: 1024
+      Color Correction: Gamma: Tables: Green: Gain: 8: 1024
+      Color Correction: Gamma: Tables: Green: Gain: 9: 1024
+      Color Correction: Gamma: Tables: Green: Gain: 10: 1024
+      Color Correction: Gamma: Tables: Green: Gain: 11: 1024
+      Color Correction: Gamma: Tables: Green: Gain: 12: 1024
+      Color Correction: Gamma: Tables: Green: Gain: 13: 1024
+      Color Correction: Gamma: Tables: Green: Gain: 14: 1024
+      Color Correction: Gamma: Tables: Green: Gain: 15: 1024
+      Color Correction: Gamma: Tables: Green: Threshold: 1: 64
+      Color Correction: Gamma: Tables: Green: Threshold: 2: 128
+      Color Correction: Gamma: Tables: Green: Threshold: 3: 192
+      Color Correction: Gamma: Tables: Green: Threshold: 4: 256
+      Color Correction: Gamma: Tables: Green: Threshold: 5: 320
+      Color Correction: Gamma: Tables: Green: Threshold: 6: 384
+      Color Correction: Gamma: Tables: Green: Threshold: 7: 448
+      Color Correction: Gamma: Tables: Green: Threshold: 8: 512
+      Color Correction: Gamma: Tables: Green: Threshold: 9: 576
+      Color Correction: Gamma: Tables: Green: Threshold: 10: 640
+      Color Correction: Gamma: Tables: Green: Threshold: 11: 704
+      Color Correction: Gamma: Tables: Green: Threshold: 12: 768
+      Color Correction: Gamma: Tables: Green: Threshold: 13: 832
+      Color Correction: Gamma: Tables: Green: Threshold: 14: 896
+      Color Correction: Gamma: Tables: Green: Threshold: 15: 960
+      Color Correction: Gamma: Tables: Blue: Gain: 0: 1024
+      Color Correction: Gamma: Tables: Blue: Gain: 1: 1024
+      Color Correction: Gamma: Tables: Blue: Gain: 2: 1024
+      Color Correction: Gamma: Tables: Blue: Gain: 3: 1024
+      Color Correction: Gamma: Tables: Blue: Gain: 4: 1024
+      Color Correction: Gamma: Tables: Blue: Gain: 5: 1024
+      Color Correction: Gamma: Tables: Blue: Gain: 6: 1024
+      Color Correction: Gamma: Tables: Blue: Gain: 7: 1024
+      Color Correction: Gamma: Tables: Blue: Gain: 8: 1024
+      Color Correction: Gamma: Tables: Blue: Gain: 9: 1024
+      Color Correction: Gamma: Tables: Blue: Gain: 10: 1024
+      Color Correction: Gamma: Tables: Blue: Gain: 11: 1024
+      Color Correction: Gamma: Tables: Blue: Gain: 12: 1024
+      Color Correction: Gamma: Tables: Blue: Gain: 13: 1024
+      Color Correction: Gamma: Tables: Blue: Gain: 14: 1024
+      Color Correction: Gamma: Tables: Blue: Gain: 15: 1024
+      Color Correction: Gamma: Tables: Blue: Threshold: 1: 64
+      Color Correction: Gamma: Tables: Blue: Threshold: 2: 128
+      Color Correction: Gamma: Tables: Blue: Threshold: 3: 192
+      Color Correction: Gamma: Tables: Blue: Threshold: 4: 256
+      Color Correction: Gamma: Tables: Blue: Threshold: 5: 320
+      Color Correction: Gamma: Tables: Blue: Threshold: 6: 384
+      Color Correction: Gamma: Tables: Blue: Threshold: 7: 448
+      Color Correction: Gamma: Tables: Blue: Threshold: 8: 512
+      Color Correction: Gamma: Tables: Blue: Threshold: 9: 576
+      Color Correction: Gamma: Tables: Blue: Threshold: 10: 640
+      Color Correction: Gamma: Tables: Blue: Threshold: 11: 704
+      Color Correction: Gamma: Tables: Blue: Threshold: 12: 768
+      Color Correction: Gamma: Tables: Blue: Threshold: 13: 832
+      Color Correction: Gamma: Tables: Blue: Threshold: 14: 896
+      Color Correction: Gamma: Tables: Blue: Threshold: 15: 960
+      Dithering: Enabled: No
+      Dithering: Mode: Truncate
+      Dithering: Pattern A: Pattern 11
+      Dithering: Pattern B: Pattern 11
+      Dithering: Pattern C: Pattern 11
+      Dithering: Pattern D: Pattern 11
+      
     Instance "g_timer0 Timer, General PWM (r_gpt)"
       General: Name: g_timer0
       General: Channel: 0
       General: Mode: Periodic
-      General: Period: 0xFFFFFFFF
+      General: Period: 0xffffffff
       General: Compare Match: Compare Match A: Status: Disabled
       General: Compare Match: Compare Match A: Compare match value: 0x10000
       General: Compare Match: Compare Match B: Status: Disabled
@@ -1008,6 +1293,24 @@ FSP Configuration
       Extra Features: Interrupt Skipping (Channels with GTITC only): Skip ADC Events: None
       Extra Features: Output Disable: GTIOCA Disable Setting: Disable Prohibited
       Extra Features: Output Disable: GTIOCB Disable Setting: Disable Prohibited
+      
+    Instance "g_sci_spi0 SPI (r_sci_b_spi)"
+      Name: g_sci_spi0
+      Channel: 0
+      Operating Mode: Master
+      Clock Phase: Data sampling on odd edge, data variation on even edge
+      Clock Polarity: Low when idle
+      Mode Fault Error: Disable
+      Bit Order: MSB First
+      Clock Source: PCLK
+      Callback: sci_b_spi0_callback
+      Receive Interrupt Priority: Priority 12
+      Transmit Interrupt Priority: Priority 12
+      Transmit End Interrupt Priority: Priority 12
+      Error Interrupt Priority: Priority 12
+      Bitrate: 8000000
+      Transmit FIFO Trigger Level: Disabled
+      Receive Sampling Timing Adjustment (Master Only): Default (No Delay)
       
     Instance "Arm Ethos-U Core Driver Wrapper (rm_ethosu)"
       Name: g_rm_ethosu0
