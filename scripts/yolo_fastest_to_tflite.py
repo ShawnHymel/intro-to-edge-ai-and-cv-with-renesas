@@ -1,5 +1,6 @@
 """
 YOLO-Fastest to Quantized TFLite Converter
+===========================================
 
 Converts a YOLO-Fastest PyTorch model (.pt) to a quantized INT8 TFLite model
 suitable for deployment on Renesas RA8 (Ethos-U55 NPU) via MERA/RUHMI.
@@ -265,7 +266,6 @@ def _patch_tflite_flatbuffer(tflite_bytes):
 
     return bytes(buf)
 
-
 ###############################################################################
 # Public functions
 
@@ -332,16 +332,18 @@ def yolo_fastest_to_quantized_tflite(
         ref6 = test_data["pt_out0"][0].transpose(1, 2, 0)
         ref12 = test_data["pt_out1"][0].transpose(1, 2, 0)
 
-        mse_6 = np.mean((keras_out[0][0] - ref6) ** 2)
-        mse_12 = np.mean((keras_out[1][0] - ref12) ** 2)
+        mse_0 = np.mean((keras_out[0][0] - ref6) ** 2)
+        mse_1 = np.mean((keras_out[1][0] - ref12) ** 2)
         max_diff = max(
             np.max(np.abs(keras_out[0][0] - ref6)),
             np.max(np.abs(keras_out[1][0] - ref12)),
         )
 
         if verbose:
-            print(f"  6x6 MSE:  {mse_6:.8f}")
-            print(f"  12x12 MSE: {mse_12:.8f}")
+            grid0 = keras_out[0].shape[1]
+            grid1 = keras_out[1].shape[1]
+            print(f"  {grid0}x{grid0} MSE:  {mse_0:.8f}")
+            print(f"  {grid1}x{grid1} MSE: {mse_1:.8f}")
             print(f"  Max diff:  {max_diff:.8f}")
 
         if max_diff > 0.001:
@@ -361,11 +363,16 @@ def yolo_fastest_to_quantized_tflite(
         for i in range(cal_nhwc.shape[0]):
             yield [cal_nhwc[i : i + 1]]
 
-    # Convert to INT8 TFLite
+    # Convert to INT8 TFLite using concrete function for clean tensor names
     if verbose:
         print("Quantizing to INT8 TFLite...")
 
-    converter = tf.lite.TFLiteConverter.from_keras_model(keras_model)
+    run_fn = tf.function(lambda x: keras_model(x))
+    concrete = run_fn.get_concrete_function(
+        tf.TensorSpec([1] + list(input_shape), tf.float32, name="image_input")
+    )
+
+    converter = tf.lite.TFLiteConverter.from_concrete_functions([concrete])
     converter.optimizations = [tf.lite.Optimize.DEFAULT]
     converter.representative_dataset = representative_dataset
     converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
@@ -408,15 +415,14 @@ def yolo_fastest_to_quantized_tflite(
     if verbose:
         print(f"\nQuantization parameters:")
         print(f"  input_scale={result['input_scale']:.10f}, input_zp={result['input_zp']}")
-        for grid_h in [6, 12]:
-            key = f"{grid_h}x{grid_h}"
-            print(f"  output_{key}_scale={result[f'output_{key}_scale']:.10f}, output_{key}_zp={result[f'output_{key}_zp']}")
+        for key in sorted(k for k in result if k.startswith("output_")):
+            print(f"  {key}={result[key]}")
 
     return result
 
 def print_raw_outputs(
-    outputs_6x6,
-    outputs_12x12,
+    output_0,
+    output_1,
     format="nhwc",
     input_image=None,
     predictions=None,
@@ -427,10 +433,11 @@ def print_raw_outputs(
     PyTorch FP32 and TFLite INT8 outputs.
 
     Args:
-        outputs_6x6: Raw 6x6 output. Shape (18, 6, 6) if CHW or (6, 6, 18)
-            if HWC.
-        outputs_12x12: Raw 12x12 output. Shape (18, 12, 12) if CHW or
-            (12, 12, 18) if HWC.
+        output_0: Raw coarse-grid output (smaller spatial dim, larger objects).
+            Shape (C, H, W) if CHW or (H, W, C) if HWC.
+        output_1: Raw fine-grid output (larger spatial dim, smaller objects).
+            Shape (C, H, W) if CHW or (H, W, C) if HWC.
+        label: Label for the printout (e.g. "PyTorch FP32", "TFLite INT8").
         format: 'nchw' or 'chw' for PyTorch-style, 'nhwc' or 'hwc' for TFLite.
         input_image: Optional input image array. If CHW (3, H, W), prints
             first 12 R-channel values. If HWC (H, W, 3), prints first 12
@@ -439,6 +446,7 @@ def print_raw_outputs(
             [(x1, y1, x2, y2, conf, cls), ...] to print.
         ground_truth: Optional ground truth labels to print count.
     """
+
     # Input verification
     if input_image is not None:
         img_flat = np.asarray(input_image).flatten()
@@ -447,46 +455,33 @@ def print_raw_outputs(
         print(f"First 12 input values ({fmt}):")
         for i in range(min(12, len(img_flat))):
             print(f"  [{i}] = {img_flat[i]:.4f}")
-        print(f"Input sum (first 1000 values): {img_flat[:1000].sum():.4f}")
 
     # Print in HWC order: each row = 1 anchor at 1 grid cell (6 values: tx,ty,tw,th,obj,cls)
     num_attrs = 6  # tx, ty, tw, th, obj, cls
     num_anchors = 3
 
-    # Convert to HWC for printing
-    if format in ("nhwc", "hwc"):
-        hwc0 = np.asarray(outputs_6x6).reshape(-1)    # already HWC
-        hwc1 = np.asarray(outputs_12x12).reshape(-1)
-    else:
-        # CHW -> HWC: (18, H, W) -> (H, W, 18)
-        hwc0 = np.transpose(np.asarray(outputs_6x6), (1, 2, 0)).flatten()
-        hwc1 = np.transpose(np.asarray(outputs_12x12), (1, 2, 0)).flatten()
+    print(f"\nOutput format: [y, x][anchor] tx ty tw th obj cls")
 
-    print(f"\nOutput format: [y, x][anchor] tx    ty      tw      th      obj     cls")
+    for out_idx, (out_arr, fmt_flag) in enumerate([
+        (output_0, format), (output_1, format)
+    ]):
+        arr = np.asarray(out_arr)
+        if fmt_flag in ("nhwc", "hwc"):
+            grid_size = arr.shape[0]
+            hwc = arr.reshape(-1)
+        else:
+            grid_size = arr.shape[1]  # CHW: (18, H, W)
+            hwc = np.transpose(arr, (1, 2, 0)).flatten()
 
-    # 6x6 output
-    grid0_size = 6
-    n_cells = min(4, grid0_size * grid0_size)  # Print first 4 cells
-    print(f"\nOutput0 (6x6 grid) - first {n_cells} cells:")
-    for cell in range(n_cells):
-        y = cell // grid0_size
-        x = cell % grid0_size
-        for a in range(num_anchors):
-            base = cell * num_anchors * num_attrs + a * num_attrs
-            vals = " ".join(f"{hwc0[base + c]:7.3f}" for c in range(num_attrs))
-            print(f"  [{y},{x}][a={a}] {vals}")
-
-    # 12x12 output
-    grid1_size = 12
-    n_cells = min(4, grid1_size * grid1_size)
-    print(f"\nOutput1 (12x12 grid) - first {n_cells} cells:")
-    for cell in range(n_cells):
-        y = cell // grid1_size
-        x = cell % grid1_size
-        for a in range(num_anchors):
-            base = cell * num_anchors * num_attrs + a * num_attrs
-            vals = " ".join(f"{hwc1[base + c]:7.3f}" for c in range(num_attrs))
-            print(f"  [{y},{x}][a={a}] {vals}")
+        n_cells = min(4, grid_size * grid_size)
+        print(f"\nOutput{out_idx} ({grid_size}x{grid_size} grid) - first {n_cells} cells:")
+        for cell in range(n_cells):
+            y = cell // grid_size
+            x = cell % grid_size
+            for a in range(num_anchors):
+                base = cell * num_anchors * num_attrs + a * num_attrs
+                vals = " ".join(f"{hwc[base + c]:7.3f}" for c in range(num_attrs))
+                print(f"  [{y},{x}][a={a}] {vals}")
 
     # Ground truth and predictions
     if ground_truth is not None:
@@ -508,13 +503,13 @@ def run_tflite_inference(tflite_path, test_npz_path):
         tflite_path: Path to the INT8 .tflite file.
         test_npz_path: Path to test_image.npz containing:
             'image': float32 NCHW image (C, H, W), values in [0, 1]
-            'pt_out0': PyTorch 6x6 output (optional, for comparison)
-            'pt_out1': PyTorch 12x12 output (optional, for comparison)
+            'pt_out0': PyTorch coarse-grid output (optional, for comparison)
+            'pt_out1': PyTorch fine-grid output (optional, for comparison)
 
     Returns:
         dict with keys:
-            'outputs': dict mapping grid name (e.g. '6x6') to dequantized
-                float32 NHWC output array, shape (H, W, 18)
+            'outputs': dict mapping grid name (e.g. '10x10') to dequantized
+                float32 NHWC output array, shape (H, W, C)
             'raw_outputs': dict mapping grid name to raw int8 arrays
             'quant_params': dict mapping grid name to (scale, zero_point)
             'comparison': dict with MSE/max_diff vs PyTorch (if ref available)
@@ -556,10 +551,12 @@ def run_tflite_inference(tflite_path, test_npz_path):
         quant_params[grid_name] = (s, z)
 
     # Compare with PyTorch reference if available
-    pt_keys = {"6x6": "pt_out0", "12x12": "pt_out1"}
-    for grid_name, pt_key in pt_keys.items():
-        if pt_key in test_data and grid_name in outputs:
-            ref = test_data[pt_key][0].transpose(1, 2, 0)  # NCHW -> HWC
+    # Map grid sizes to reference keys (sorted: smaller grid first)
+    sorted_grids = sorted(outputs.keys(), key=lambda g: int(g.split("x")[0]))
+    pt_keys_ordered = ["pt_out0", "pt_out1"]
+    for i, grid_name in enumerate(sorted_grids):
+        if i < len(pt_keys_ordered) and pt_keys_ordered[i] in test_data:
+            ref = test_data[pt_keys_ordered[i]][0].transpose(1, 2, 0)  # NCHW -> HWC
             deq = outputs[grid_name]
             mse = float(np.mean((deq - ref) ** 2))
             max_diff = float(np.max(np.abs(deq - ref)))
