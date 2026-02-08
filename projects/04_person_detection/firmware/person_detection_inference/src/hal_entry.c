@@ -5,6 +5,7 @@
 #include "camera_layer/camera_layer.h"
 #include "common_utils.h"
 #include "display_layer/display_screen.h"
+#include "display_layer/display_layer_config.h"
 #include "inference/model.h"
 #include "postprocess/postprocess.h"
 #include "utils/utils.h"
@@ -22,8 +23,8 @@
 #define NUM_CLASSES 1
 #define NUM_ANCHORS 3
 #define NUM_ATTRS 6     /* tx, ty, tw, th, obj, cls */
-#define CONF_THRESHOLD 0.25f
-#define IOU_THRESHOLD 0.45f
+#define CONF_THRESHOLD 0.5f
+#define IOU_THRESHOLD 0.5f
 #define MAX_DETECTIONS 10
 
 /* Grid sizes */
@@ -60,6 +61,25 @@ static const float anchors_grid2[NUM_ANCHORS][2] = {
 const char* class_names[] = {
     "person",
 };
+
+/* Run inference every Nth frame */
+#define INFERENCE_INTERVAL 10
+
+/* Enable serial terminal output */
+#define SERIAL_PRINT_RESULTS 1
+
+/* Display box settings */
+#define BOX_COLOR       0x00FF00  /* Green (24-bit RGB) */
+#define BOX_LINE_WIDTH  3         /* Pixels */
+
+/* Scale factor: model coords (IMG_WIDTH) -> display coords (AI_INPUT_WIDTH) */
+#define DISPLAY_SCALE ((float)AI_INPUT_WIDTH / (float)IMG_WIDTH)
+
+/******************************************************************************
+ * Persistent detection state (drawn every frame, updated on inference frames)
+ ******************************************************************************/
+static detection_t g_detections[MAX_DETECTIONS * 2];
+static int g_detection_count = 0;
 
 /******************************************************************************
  * Function prototypes
@@ -125,11 +145,10 @@ void hal_entry(void)
     int8_t* input_ptr;
     int8_t* output1_ptr;
     int8_t* output2_ptr;
-    bool pressed = false;
-    bool inference_pending = false;
     uint32_t preprocess_time_us;
     uint32_t inference_time_us;
     uint32_t postprocess_time_us;
+    uint32_t frame_count = 0;
 
     /* Initialize debugging terminal */
     TERM_INIT();
@@ -208,23 +227,11 @@ void hal_entry(void)
     /* Start camera capture */
     APP_PRINT("Starting camera capture...\r\n");
     camera_capture_start();
-    APP_PRINT("Press SW1 to capture and run person detection\r\n");
+    APP_PRINT("Running continuous person detection...\r\n");
 
-    /* Main loop */
+    /* Main loop — display every frame, run inference periodically */
     while (1)
     {
-    	/* See if SW1 button has been pressed (with debounce logic) */
-		err = check_button_sw1(&pressed);
-		if (FSP_SUCCESS != err) {
-			APP_PRINT("Error: Could not check SW1 button: %d\r\n", err);
-		}
-
-		/* If pressed, set flag to run inference on next frame */
-		if (pressed)
-		{
-			inference_pending = true;
-		}
-
         /* Poll for camera ready flag */
         if (g_camera_frame_ready)
         {
@@ -235,87 +242,106 @@ void hal_entry(void)
              */
             camera_capture_post_process();
 
-            /* If button has been pressed, perform inference */
-            if (inference_pending)
+            /* Run inference on every Nth frame */
+            if (++frame_count >= INFERENCE_INTERVAL)
             {
-            	inference_pending = false;
+                frame_count = 0;
 
-            	/* Invalidate cache to ensure CPU sees latest data from DMA */
-				SCB_InvalidateDCache_by_Addr((uint32_t *)camera_capture_image_rgb565,
-											 (int32_t)camera_capture_image_rgb565_size);
+                /* Invalidate cache to ensure CPU sees latest data from DMA */
+                SCB_InvalidateDCache_by_Addr((uint32_t *)camera_capture_image_rgb565,
+                                             (int32_t)camera_capture_image_rgb565_size);
 
-				/* Preprocess: crop to square, resize to 320x320, convert to RGB int8 */
-				preprocess_time_us = micros();
-				image_crop_and_resize_rgb((const uint16_t *)camera_capture_image_rgb565,
-							  input_ptr,
-							  CAMERA_CAPTURE_IMAGE_WIDTH,
-							  CAMERA_CAPTURE_IMAGE_HEIGHT,
-							  IMG_WIDTH,
-							  IMG_HEIGHT);
-				preprocess_time_us = micros() - preprocess_time_us;
+                /* Preprocess: crop to square, resize to 320x320, convert to RGB int8 */
+                preprocess_time_us = micros();
+                image_crop_and_resize_rgb((const uint16_t *)camera_capture_image_rgb565,
+                              input_ptr,
+                              CAMERA_CAPTURE_IMAGE_WIDTH,
+                              CAMERA_CAPTURE_IMAGE_HEIGHT,
+                              IMG_WIDTH,
+                              IMG_HEIGHT);
+                preprocess_time_us = micros() - preprocess_time_us;
 
-				/* Run inference */
-				inference_time_us = micros();
-				RunModel(true);
-				inference_time_us = micros() - inference_time_us;
+                /* Run inference */
+                inference_time_us = micros();
+                RunModel(true);
+                inference_time_us = micros() - inference_time_us;
 
-				/* Decode detections from both grids */
-				detection_t detections[MAX_DETECTIONS * 2];
+                /* Decode detections from both grids */
+                detection_t detections[MAX_DETECTIONS * 2];
 
-				postprocess_time_us = micros();
-				int count = 0;
-				count += decode_yolo_output_int8(
-					output1_ptr, GRID_1_SIZE,
-					IMG_WIDTH, IMG_HEIGHT, NUM_CLASSES,
-					OUTPUT_GRID1_SCALE, OUTPUT_GRID1_ZP,
-					anchors_grid1, NUM_ANCHORS,
-					CONF_THRESHOLD,
-					&detections[count], MAX_DETECTIONS);
+                postprocess_time_us = micros();
+                int count = 0;
+                count += decode_yolo_output_int8(
+                    output1_ptr, GRID_1_SIZE,
+                    IMG_WIDTH, IMG_HEIGHT, NUM_CLASSES,
+                    OUTPUT_GRID1_SCALE, OUTPUT_GRID1_ZP,
+                    anchors_grid1, NUM_ANCHORS,
+                    CONF_THRESHOLD,
+                    &detections[count], MAX_DETECTIONS);
 
-				int count2 = decode_yolo_output_int8(
-					output2_ptr, GRID_2_SIZE,
-					IMG_WIDTH, IMG_HEIGHT, NUM_CLASSES,
-					OUTPUT_GRID2_SCALE, OUTPUT_GRID2_ZP,
-					anchors_grid2, NUM_ANCHORS,
-					CONF_THRESHOLD,
-					&detections[count], MAX_DETECTIONS);
-				count += count2;
+                int count2 = decode_yolo_output_int8(
+                    output2_ptr, GRID_2_SIZE,
+                    IMG_WIDTH, IMG_HEIGHT, NUM_CLASSES,
+                    OUTPUT_GRID2_SCALE, OUTPUT_GRID2_ZP,
+                    anchors_grid2, NUM_ANCHORS,
+                    CONF_THRESHOLD,
+                    &detections[count], MAX_DETECTIONS);
+                count += count2;
 
-				/* Apply NMS */
-				count = apply_nms(detections, count, IOU_THRESHOLD);
-				postprocess_time_us = micros() - postprocess_time_us;
+                /* Apply NMS */
+                count = apply_nms(detections, count, IOU_THRESHOLD);
+                postprocess_time_us = micros() - postprocess_time_us;
 
-				/* Print timing */
-				APP_PRINT("\r\n=== Person Detection Results ===\r\n");
-				APP_PRINT("  Preprocess time: %u us\r\n", preprocess_time_us);
-				APP_PRINT("  Inference time:  %u us\r\n", inference_time_us);
-				APP_PRINT("  Postprocess time:  %u us\r\n", postprocess_time_us);
+                /* Store detections for display */
+                g_detection_count = count;
+                for (int i = 0; i < count; i++) {
+                    g_detections[i] = detections[i];
+                }
 
-				/* Print final detections */
-				APP_PRINT("  After NMS: %d\r\n", count);
-				for (int i = 0; i < count; i++) {
-					APP_PRINT("  [%d] (%.1f, %.1f)-(%.1f, %.1f) conf=%.4f\r\n",
-						  i,
-						  detections[i].x1, detections[i].y1,
-						  detections[i].x2, detections[i].y2,
-						  detections[i].confidence);
-				}
-				if (count == 0) {
-					APP_PRINT("  No persons detected\r\n");
-				}
+                /* Print results */
+#if SERIAL_PRINT_RESULTS
+                APP_PRINT("Preprocess: %u us | Inference: %u us | Postprocess: %u us\r\n",
+                          preprocess_time_us, inference_time_us, postprocess_time_us);
+                if (count > 0) {
+                    APP_PRINT("Detected %d person(s)\r\n", count);
+                    for (int i = 0; i < count; i++) {
+                        APP_PRINT("  [%d] (%.0f,%.0f)-(%.0f,%.0f) %.2f\r\n",
+                              i,
+                              detections[i].x1, detections[i].y1,
+                              detections[i].x2, detections[i].y2,
+                              detections[i].confidence);
+                    }
+                }
+#endif
             }
 
-            /* Wait for vsync flag */
+            /* Always update display */
             while (!g_display_vsync_ready);
             g_display_vsync_ready = false;
 
-            /* Start a new graphics frame */
             graphics_start_frame();
-
-            /* Display the camera image */
             display_camera_image();
 
-            /* Wait for previous frame rendering to finish, then finalize this frame and flip the buffers */
+            /* Draw bounding boxes over the camera image */
+            if (g_detection_count > 0)
+            {
+                d2_selectrendermode(d2_handle, d2_rm_outline);
+                d2_outlinewidth(d2_handle, (d2_width)(BOX_LINE_WIDTH << 4));
+                d2_setcolor(d2_handle, 0, BOX_COLOR);
+
+                for (int i = 0; i < g_detection_count; i++)
+                {
+                    d2_s32 x = (d2_s32)(g_detections[i].x1 * DISPLAY_SCALE);
+                    d2_s32 y = (d2_s32)(g_detections[i].y1 * DISPLAY_SCALE);
+                    d2_s32 w = (d2_s32)((g_detections[i].x2 - g_detections[i].x1) * DISPLAY_SCALE);
+                    d2_s32 h = (d2_s32)((g_detections[i].y2 - g_detections[i].y1) * DISPLAY_SCALE);
+
+                    d2_renderbox(d2_handle,
+                                 (d2_point)(x << 4), (d2_point)(y << 4),
+                                 (d2_width)(w << 4), (d2_width)(h << 4));
+                }
+            }
+
             graphics_end_frame();
         }
     }
