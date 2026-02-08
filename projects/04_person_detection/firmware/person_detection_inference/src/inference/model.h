@@ -66,6 +66,6 @@ void RunModel(bool clean_outputs);
 int8_t* GetModelInputPtr_image_input();
 
   // Model output pointers
-int8_t* GetModelOutputPtr_StatefulPartitionedCall_1_0_70275();
-int8_t* GetModelOutputPtr_StatefulPartitionedCall_1_1_70284();
+int8_t* GetModelOutputPtr_Identity_70275();
+int8_t* GetModelOutputPtr_Identity_1_70284();
 
