@@ -23,25 +23,25 @@
 #define NUM_CLASSES 1
 #define NUM_ANCHORS 3
 #define NUM_ATTRS 6     /* tx, ty, tw, th, obj, cls */
-#define CONF_THRESHOLD 0.5f
-#define IOU_THRESHOLD 0.5f
+#define CONF_THRESHOLD 0.25f
+#define IOU_THRESHOLD 0.45f
 #define MAX_DETECTIONS 10
 
 /* Grid sizes */
 #define GRID_1_SIZE 10   /* Coarse grid for larger objects */
-#define GRID_2_SIZE 10  /* Fine grid for smaller objects */
+#define GRID_2_SIZE 20  /* Fine grid for smaller objects */
 
 /* Quantization parameters */
 #define INPUT_SCALE 0.0039215689f
 #define INPUT_ZP -128
-#define OUTPUT_GRID1_SCALE 0.0829966888f
-#define OUTPUT_GRID1_ZP -14
-#define OUTPUT_GRID2_SCALE 0.0829966888f
-#define OUTPUT_GRID2_ZP -14
+#define OUTPUT_GRID1_SCALE 0.0802803859f
+#define OUTPUT_GRID1_ZP -17
+#define OUTPUT_GRID2_SCALE 0.0731623173f
+#define OUTPUT_GRID2_ZP -12
 
 /* Anchor masks */
 /* Grid 1 (10x10) uses anchors: [3, 4, 5] */
-/* Grid 2 (10x10) uses anchors: [0, 1, 2] */
+/* Grid 2 (20x20) uses anchors: [0, 1, 2] */
 
 /* Anchors for grid 1 (10x10 - larger objects) */
 static const float anchors_grid1[NUM_ANCHORS][2] = {
@@ -50,7 +50,7 @@ static const float anchors_grid1[NUM_ANCHORS][2] = {
     {242.0f, 238.0f},  /* anchor 5 */
 };
 
-/* Anchors for grid 2 (10x10 - smaller objects) */
+/* Anchors for grid 2 (20x20 - smaller objects) */
 static const float anchors_grid2[NUM_ANCHORS][2] = {
     {12.0f, 18.0f},  /* anchor 0 */
     {37.0f, 49.0f},  /* anchor 1 */
@@ -74,12 +74,6 @@ const char* class_names[] = {
 
 /* Scale factor: model coords (IMG_WIDTH) -> display coords (AI_INPUT_WIDTH) */
 #define DISPLAY_SCALE ((float)AI_INPUT_WIDTH / (float)IMG_WIDTH)
-
-/******************************************************************************
- * Persistent detection state (drawn every frame, updated on inference frames)
- ******************************************************************************/
-static detection_t g_detections[MAX_DETECTIONS * 2];
-static int g_detection_count = 0;
 
 /******************************************************************************
  * Function prototypes
@@ -149,6 +143,8 @@ void hal_entry(void)
     uint32_t inference_time_us;
     uint32_t postprocess_time_us;
     uint32_t frame_count = 0;
+    detection_t detections[MAX_DETECTIONS * 2];
+    int num_detections = 0;
 
     /* Initialize debugging terminal */
     TERM_INIT();
@@ -179,11 +175,6 @@ void hal_entry(void)
 	input_ptr = GetModelInputPtr_image_input();
 	output1_ptr = GetModelOutputPtr_Identity_70275();      /* grid 1 */
 	output2_ptr = GetModelOutputPtr_Identity_1_70284();    /* grid 2 */
-
-	APP_PRINT("Buffer addresses:\r\n");
-	APP_PRINT("  input:   %p\r\n", (void*)input_ptr);
-	APP_PRINT("  output1: %p (%dx%d grid)\r\n", (void*)output1_ptr, GRID_1_SIZE, GRID_1_SIZE);
-	APP_PRINT("  output2: %p (%dx%d grid)\r\n", (void*)output2_ptr, GRID_2_SIZE, GRID_2_SIZE);
 
     /* Enable MIPI I/F on the EK-RA8P1 */
     err = R_IOPORT_PinWrite(&g_ioport_ctrl, MIPI_IF_EN, BSP_IO_LEVEL_LOW);
@@ -266,45 +257,51 @@ void hal_entry(void)
                 RunModel(true);
                 inference_time_us = micros() - inference_time_us;
 
-                /* Decode detections from both grids */
-                detection_t detections[MAX_DETECTIONS * 2];
+                /* Reset detection counter */
+                num_detections = 0;
 
+                /* Post process: decode outputs to find detections on coarse grid */
                 postprocess_time_us = micros();
-                int count = 0;
-                count += decode_yolo_output_int8(
-                    output1_ptr, GRID_1_SIZE,
-                    IMG_WIDTH, IMG_HEIGHT, NUM_CLASSES,
-                    OUTPUT_GRID1_SCALE, OUTPUT_GRID1_ZP,
-                    anchors_grid1, NUM_ANCHORS,
+                num_detections = decode_yolo_output_int8(
+                    output1_ptr,
+					GRID_1_SIZE,
+                    IMG_WIDTH,
+					IMG_HEIGHT,
+					NUM_CLASSES,
+                    OUTPUT_GRID1_SCALE,
+					OUTPUT_GRID1_ZP,
+                    anchors_grid1,
+					NUM_ANCHORS,
                     CONF_THRESHOLD,
-                    &detections[count], MAX_DETECTIONS);
+                    &detections[num_detections],
+					MAX_DETECTIONS);
 
-                int count2 = decode_yolo_output_int8(
-                    output2_ptr, GRID_2_SIZE,
-                    IMG_WIDTH, IMG_HEIGHT, NUM_CLASSES,
-                    OUTPUT_GRID2_SCALE, OUTPUT_GRID2_ZP,
-                    anchors_grid2, NUM_ANCHORS,
+                /* Post process: decode outputs to find detections on fine grid */
+                num_detections += decode_yolo_output_int8(
+                    output2_ptr,
+					GRID_2_SIZE,
+                    IMG_WIDTH,
+					IMG_HEIGHT,
+					NUM_CLASSES,
+                    OUTPUT_GRID2_SCALE,
+					OUTPUT_GRID2_ZP,
+                    anchors_grid2,
+					NUM_ANCHORS,
                     CONF_THRESHOLD,
-                    &detections[count], MAX_DETECTIONS);
-                count += count2;
+                    &detections[num_detections],
+					MAX_DETECTIONS);
 
-                /* Apply NMS */
-                count = apply_nms(detections, count, IOU_THRESHOLD);
+                /* Apply NMS on detections */
+                num_detections = apply_nms(detections, num_detections, IOU_THRESHOLD);
                 postprocess_time_us = micros() - postprocess_time_us;
-
-                /* Store detections for display */
-                g_detection_count = count;
-                for (int i = 0; i < count; i++) {
-                    g_detections[i] = detections[i];
-                }
 
                 /* Print results */
 #if SERIAL_PRINT_RESULTS
                 APP_PRINT("Preprocess: %u us | Inference: %u us | Postprocess: %u us\r\n",
                           preprocess_time_us, inference_time_us, postprocess_time_us);
-                if (count > 0) {
-                    APP_PRINT("Detected %d person(s)\r\n", count);
-                    for (int i = 0; i < count; i++) {
+                if (num_detections > 0) {
+                    APP_PRINT("Detected %d person(s)\r\n", num_detections);
+                    for (int i = 0; i < num_detections; i++) {
                         APP_PRINT("  [%d] (%.0f,%.0f)-(%.0f,%.0f) %.2f\r\n",
                               i,
                               detections[i].x1, detections[i].y1,
@@ -315,33 +312,39 @@ void hal_entry(void)
 #endif
             }
 
-            /* Always update display */
-            while (!g_display_vsync_ready);
-            g_display_vsync_ready = false;
+            /* Wait for vsync flag */
+			while (!g_display_vsync_ready);
+			g_display_vsync_ready = false;
 
-            graphics_start_frame();
-            display_camera_image();
+			/* Start a new graphics frame */
+			graphics_start_frame();
+
+			/* Display the camera image */
+			display_camera_image();
 
             /* Draw bounding boxes over the camera image */
-            if (g_detection_count > 0)
+            if (num_detections > 0)
             {
                 d2_selectrendermode(d2_handle, d2_rm_outline);
                 d2_outlinewidth(d2_handle, (d2_width)(BOX_LINE_WIDTH << 4));
                 d2_setcolor(d2_handle, 0, BOX_COLOR);
 
-                for (int i = 0; i < g_detection_count; i++)
+                /* Go over all detections */
+                for (int i = 0; i < num_detections; i++)
                 {
-                    d2_s32 x = (d2_s32)(g_detections[i].x1 * DISPLAY_SCALE);
-                    d2_s32 y = (d2_s32)(g_detections[i].y1 * DISPLAY_SCALE);
-                    d2_s32 w = (d2_s32)((g_detections[i].x2 - g_detections[i].x1) * DISPLAY_SCALE);
-                    d2_s32 h = (d2_s32)((g_detections[i].y2 - g_detections[i].y1) * DISPLAY_SCALE);
+                    d2_s32 x = (d2_s32)(detections[i].x1 * DISPLAY_SCALE);
+                    d2_s32 y = (d2_s32)(detections[i].y1 * DISPLAY_SCALE);
+                    d2_s32 w = (d2_s32)((detections[i].x2 - detections[i].x1) * DISPLAY_SCALE);
+                    d2_s32 h = (d2_s32)((detections[i].y2 - detections[i].y1) * DISPLAY_SCALE);
 
+                    /* Draw box */
                     d2_renderbox(d2_handle,
                                  (d2_point)(x << 4), (d2_point)(y << 4),
                                  (d2_width)(w << 4), (d2_width)(h << 4));
                 }
             }
 
+            /* Wait for previous frame rendering to finish, then finalize this frame and flip the buffers */
             graphics_end_frame();
         }
     }
